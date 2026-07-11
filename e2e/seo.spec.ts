@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const productionBase = 'https://jarvanstack.github.io/markdown-to-resume';
+const productionBase = 'https://resume.jarvans.com';
 
 test('每个搜索入口都返回独立、可抓取的 HTML', async ({ request }) => {
   const pages = [

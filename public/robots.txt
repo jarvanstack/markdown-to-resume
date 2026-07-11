@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://jarvanstack.github.io/markdown-to-resume/sitemap.xml
+Sitemap: https://resume.jarvans.com/sitemap.xml

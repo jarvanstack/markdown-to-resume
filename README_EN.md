@@ -4,7 +4,7 @@
   <h1>Moli</h1>
   <p><strong>Focus on your story and turn Markdown into a polished resume.</strong></p>
   <p>Smart one-page fitting, live pagination, role-specific templates, precise styling, and export to PDF, PNG, or HTML.</p>
-  <p><a href="https://jarvanstack.github.io/markdown-to-resume/"><strong>Live Demo</strong></a></p>
+  <p><a href="https://resume.jarvans.com/"><strong>Live Demo</strong></a></p>
 
   <p>
     <img src="https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white" alt="React 19" />

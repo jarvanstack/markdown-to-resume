@@ -20,7 +20,7 @@ describe('SEO metadata', () => {
     expect(document.querySelector('meta[name="description"]')).toHaveAttribute('content', seoPages.zh.templates.description);
     expect(document.querySelector('meta[name="keywords"]')).toHaveAttribute('content', expect.stringContaining('中文简历模板'));
     expect(document.querySelector('meta[name="keywords"]')).toHaveAttribute('content', expect.stringContaining('一页简历模板'));
-    expect(document.querySelector('link[rel="canonical"]')).toHaveAttribute('href', 'https://jarvanstack.github.io/markdown-to-resume/templates/');
+    expect(document.querySelector('link[rel="canonical"]')).toHaveAttribute('href', 'https://resume.jarvans.com/templates/');
     expect(JSON.parse(document.querySelector('#structured-data')!.textContent!)).toMatchObject({
       '@type': 'CollectionPage',
       mainEntity: { '@type': 'ItemList', numberOfItems: 18 },

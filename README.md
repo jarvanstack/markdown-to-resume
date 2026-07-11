@@ -4,7 +4,7 @@
   <h1>墨历</h1>
   <p><strong>专注内容，轻松制作一份排版专业的 Markdown 简历。</strong></p>
   <p>智能一页、实时分页预览、多套模板与精细排版，并可直接导出 PDF、PNG 或 HTML。</p>
-  <p><a href="https://jarvanstack.github.io/markdown-to-resume/"><strong>在线体验</strong></a></p>
+  <p><a href="https://resume.jarvans.com/"><strong>在线体验</strong></a></p>
 
   <p>
     <img src="https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white" alt="React 19" />

@@ -1,6 +1,6 @@
 import type { Locale } from '../types';
 
-const SITE_URL = 'https://jarvanstack.github.io/markdown-to-resume';
+const SITE_URL = 'https://resume.jarvans.com';
 
 export type SeoRoute = 'home' | 'templates' | 'themes';
 
