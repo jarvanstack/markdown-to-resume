@@ -160,7 +160,9 @@ test('中文界面复刻三栏编辑器结构', async ({ page }) => {
   await expect(page.getByTestId('export-format')).toHaveValue('pdf');
   await expect(page.getByTestId('export-format').locator('option')).toHaveCount(3);
   await expect(page.getByTestId('reset-theme-settings')).toBeVisible();
-  await expect(page.locator('.panel-brand-icon')).toBeVisible();
+  const brandIcon = page.locator('.panel-brand-icon');
+  await expect(brandIcon).toBeVisible();
+  await expect.poll(() => brandIcon.evaluate((element) => element instanceof HTMLImageElement && element.complete && element.naturalWidth > 0)).toBe(true);
   await expect(page.locator('.panel-icon')).toHaveCount(1);
   await expect(page.getByLabel('简历统计')).toContainText(/\d+字/);
   await expect(page.getByLabel('简历统计')).toContainText(/\d+分钟/);
