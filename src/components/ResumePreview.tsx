@@ -2,12 +2,12 @@ import { useEffect, useState, type CSSProperties, type RefObject } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { calculatePageBreaks, continuationMargin, paperPoints } from '../lib/pagination';
+import { getFontStack } from '../data/themes';
+import { densityStyleVariables, normalizeLayoutDensity } from '../lib/density';
 import type { ResumeSettings } from '../types';
 
 export function resumeStyle(settings: ResumeSettings): CSSProperties {
-  const fontName = settings.fontFamily === 'GitHub Sans'
-    ? '-apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"'
-    : `"${settings.fontFamily}", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif`;
+  const fontName = getFontStack(settings.fontFamily);
   return {
     '--fontName': fontName,
     '--fontScale': settings.fontSize / 16,
@@ -22,6 +22,7 @@ export function resumeStyle(settings: ResumeSettings): CSSProperties {
     '--accentColorMuted': `${settings.accentColor}b3`,
     '--mutedColor': settings.mutedColor,
     '--sectionSpacing': `${settings.sectionSpacing}px`,
+    ...densityStyleVariables(settings.layoutDensity),
   } as CSSProperties;
 }
 
@@ -36,11 +37,13 @@ interface ResumePreviewProps {
 
 export function ResumePreview({ markdown, settings, previewRef, compact = false, className = '', ariaHidden = false }: ResumePreviewProps) {
   const markdownBodyClass = settings.theme === 'github' ? ' markdown-body' : '';
+  const layoutDensity = normalizeLayoutDensity(settings.layoutDensity);
   return (
     <div
       ref={previewRef}
       className={`resume-sheet theme ${settings.theme}${markdownBodyClass} paper-${settings.paperSize.toLowerCase()}${compact ? ' compact' : ''}${className ? ` ${className}` : ''}`}
       style={resumeStyle(settings)}
+      data-density={layoutDensity}
       data-testid={compact ? undefined : 'resume-page'}
       aria-hidden={ariaHidden || undefined}
     >

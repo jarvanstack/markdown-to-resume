@@ -18,6 +18,7 @@ export interface ResumeSettings {
   accentColor: string;
   mutedColor: string;
   sectionSpacing: number;
+  layoutDensity: number;
   paperSize: PaperSize;
 }
 

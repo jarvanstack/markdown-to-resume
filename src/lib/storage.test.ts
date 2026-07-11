@@ -22,7 +22,7 @@ describe('中文简历数据', () => {
     expect(state.settings.theme).toBe('github');
     expect(state.settings).toMatchObject({
       theme: 'github',
-      fontFamily: 'GitHub Sans',
+      fontFamily: '苹果方正_Medium',
       fontSize: 16,
       lineHeight: 1.5,
       headingColor: '#1f2328',
@@ -65,6 +65,7 @@ describe('中文简历数据', () => {
     expect(theme.css).toContain('--resume-theme-name: "我的主题"');
     expect(theme.css).toContain('--resume-font-size: 12');
     expect(theme.css).toContain('--resume-line-height: 0.8');
+    expect(theme.css).toContain('--resume-layout-density: 35');
     expect(theme.css).toContain('--resume-heading-color: #1f2328');
     expect(theme.css).not.toContain('.theme.github');
   });

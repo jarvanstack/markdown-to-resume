@@ -1,6 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Inika:wght@400;700&family=Inter:wght@400;600;700;800&family=Karla:wght@400;700&family=Lato:wght@400;700;900&family=Merriweather:wght@400;700&family=Montserrat:wght@300;600;800&family=Nunito:wght@400;600;700&family=Open+Sans:wght@400;600;700&family=Overpass+Mono:wght@400;700&family=PT+Sans:wght@400;700&family=Poppins:wght@400;500;600;700&family=Raleway:wght@400;700;800&family=Work+Sans:wght@400;500;600;700&display=swap');
 @import 'github-markdown-css/github-markdown-light.css';
 @import './themes/index.css';
+@import './themes/density.css';
+@import './themes/fonts.css';
 
 :root {
   --app-bg: #f4f7f6;
@@ -109,6 +110,13 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 .sidebar-range output { color: var(--app-text-muted); font-variant-numeric: tabular-nums; }
 .sidebar-range input { width: 100%; height: 4px; margin: 0; border-radius: 2px; accent-color: var(--app-primary); cursor: pointer; }
 .section-heading-row { display: flex; align-items: start; justify-content: space-between; }
+.section-heading-actions { display: flex; align-items: center; gap: 6px; }
+.fit-page-button { display: inline-flex; align-items: center; justify-content: center; min-width: 90px; height: 27px; gap: 5px; padding: 0 8px; border: 1px solid var(--app-primary-border); border-radius: 5px; background: var(--app-primary-soft); color: var(--app-primary-hover); font-size: 10px; font-weight: 700; white-space: nowrap; }
+.fit-page-button:hover { border-color: var(--app-primary); background: var(--app-selection); }
+.fit-page-button:disabled { opacity: .7; cursor: wait; }
+.fit-page-button[data-state="overflow"] { border-color: var(--app-danger-border); background: var(--app-surface); color: var(--app-danger); }
+.spin { animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 .reset-button { display: grid; place-items: center; width: 27px; height: 27px; border: 1px solid var(--app-border); border-radius: 5px; background: var(--app-surface); color: var(--app-text-muted); }
 .reset-button:hover { border-color: var(--app-primary-border); background: var(--app-primary-soft); color: var(--app-primary-hover); }
 .color-row { display: flex; align-items: center; justify-content: space-between; min-height: 38px; border-bottom: 1px solid var(--app-surface-muted); color: var(--app-text-secondary); font-size: 11px; }

@@ -1,0 +1,13 @@
+.resume-sheet > p,
+.resume-sheet > ul,
+.resume-sheet > ol,
+.resume-sheet > blockquote,
+.resume-sheet > table,
+.resume-sheet > pre { margin-top: var(--densityBodyTop); margin-bottom: var(--densityBodyBottom); }
+.resume-sheet > h1 { margin-bottom: var(--densityH1Bottom); }
+.resume-sheet > h2 { margin-bottom: var(--densityH2Bottom); }
+.resume-sheet > h3,
+.resume-sheet > h4 { margin-top: var(--densitySubheadingTop); margin-bottom: var(--densitySubheadingBottom); }
+.resume-sheet.github > h1,
+.resume-sheet.github > h2 { padding-bottom: var(--densityHeadingPadding); }
+.resume-sheet > hr { margin: var(--densityRuleGap) 0; }

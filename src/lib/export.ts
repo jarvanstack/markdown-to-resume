@@ -2,6 +2,8 @@ import { toCanvas } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 import type { Locale, PaperSize } from '../types';
 import { calculatePageBreaks, continuationMargin, paperPoints } from './pagination';
+import densityCss from '../themes/density.css?raw';
+import fontCss from '../themes/fonts.css?raw';
 
 async function renderResume(element: HTMLElement) {
   await document.fonts.ready;
@@ -56,6 +58,8 @@ export function exportHtml(element: HTMLElement, themeCss: string, locale: Local
     .resume-sheet:not(.github) hr { height: 0; border: 0; }
     .resume-sheet:not(.github), .resume-sheet:not(.github) a { overflow-wrap: anywhere; }
     ${themeCss}
+    ${densityCss}
+    ${fontCss}
     @media print { .resume-sheet { max-width: none; } }
   </style>
 </head>

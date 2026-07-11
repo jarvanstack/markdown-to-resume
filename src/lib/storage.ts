@@ -1,11 +1,12 @@
 import { templates } from '../data/templates';
+import { DEFAULT_FONT_FAMILY } from '../data/themes';
 import type { PersistedState, ResumeSettings } from '../types';
 
 export const STORAGE_KEY = 'markdown-resume-state-v3';
 
 export const defaultSettings: ResumeSettings = {
   theme: 'github',
-  fontFamily: 'GitHub Sans',
+  fontFamily: DEFAULT_FONT_FAMILY,
   fontSize: 16,
   headingScale: 1,
   lineHeight: 1.5,
@@ -17,6 +18,7 @@ export const defaultSettings: ResumeSettings = {
   accentColor: '#d1d9e0',
   mutedColor: '#59636e',
   sectionSpacing: 24,
+  layoutDensity: 35,
   paperSize: 'A4',
 };
 

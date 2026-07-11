@@ -1,0 +1,47 @@
+@font-face {
+  font-family: "Resume Alibaba PuHuiTi";
+  src: local("Alibaba PuHuiTi 2.0 55 Regular"), local("Alibaba PuHuiTi 2.0"), url("../assets/fonts/AlibabaSans-Regular.otf") format("opentype"), url("https://cdn.dancf.com/fonts/AlibabaSans-Normal/AlibabaSans-Regular.otf") format("opentype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400 900;
+}
+
+@font-face {
+  font-family: "Resume PingFang";
+  src: local("PingFang SC Medium"), local("PingFang SC"), url("https://cdn.mdedit.online/font/PingFang-Medium-sub.ttf") format("truetype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400 900;
+}
+
+@font-face {
+  font-family: "Resume Source Han Sans";
+  src: local("Source Han Sans SC"), local("Noto Sans CJK SC"), url("../assets/fonts/SourceHanSansSC-Regular.woff") format("woff"), url("https://st0.dancf.com/csc/213/fonts/229/20210601-182228-08fb.woff") format("woff");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400 900;
+}
+
+@font-face {
+  font-family: "Resume Source Han Serif";
+  src: local("Source Han Serif SC"), local("Noto Serif CJK SC"), url("../assets/fonts/SourceHanSerifSC-Regular.woff") format("woff"), url("https://st0.dancf.com/csc/156/fonts/234/20200203-111651-935f.woff") format("woff");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400 900;
+}
+
+@font-face {
+  font-family: "Resume Times New Roman";
+  src: local("Times New Roman"), url("https://cdn.mdedit.online/font/TimesNewRoman.ttf") format("truetype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400 900;
+}
+
+.resume-sheet.theme,
+.resume-sheet.theme h1,
+.resume-sheet.theme h2,
+.resume-sheet.theme h3,
+.resume-sheet.theme h4,
+.resume-sheet.theme h5,
+.resume-sheet.theme h6 { font-family: var(--fontName); }

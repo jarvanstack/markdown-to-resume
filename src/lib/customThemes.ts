@@ -1,4 +1,5 @@
 import type { CustomTheme, PaperSize, ResumeSettings } from '../types';
+import { DEFAULT_FONT_FAMILY } from '../data/themes';
 
 export const CUSTOM_THEMES_KEY = 'markdown-resume-custom-themes-v1';
 export const CUSTOM_THEME_LIMIT = 10;
@@ -19,6 +20,7 @@ const settingProperties: Record<Exclude<keyof ResumeSettings, 'theme'>, string> 
   accentColor: '--resume-accent-color',
   mutedColor: '--resume-muted-color',
   sectionSpacing: '--resume-section-spacing',
+  layoutDensity: '--resume-layout-density',
   paperSize: '--resume-paper-size',
 };
 
@@ -56,6 +58,7 @@ export function serializeThemeCss(name: string, settings: ResumeSettings, source
     `  --resume-accent-color: ${settings.accentColor};`,
     `  --resume-muted-color: ${settings.mutedColor};`,
     `  --resume-section-spacing: ${settings.sectionSpacing};`,
+    `  --resume-layout-density: ${settings.layoutDensity};`,
     `  --resume-paper-size: ${settings.paperSize};`,
     '}',
     METADATA_END,
@@ -97,7 +100,10 @@ export function loadCustomThemes(storage: Pick<Storage, 'getItem'> = localStorag
     if (!raw) return [];
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(isCustomTheme).slice(-CUSTOM_THEME_LIMIT);
+    return parsed.filter(isCustomTheme).slice(-CUSTOM_THEME_LIMIT).map((theme) => ({
+      ...theme,
+      settings: { ...theme.settings },
+    }));
   } catch {
     return [];
   }
@@ -213,7 +219,7 @@ export function parseImportedTheme(css: string, now = Date.now()) {
     const id = customId(now);
     const settings: ResumeSettings = {
       theme: id,
-      fontFamily: unquote(style.getPropertyValue(settingProperties.fontFamily)) || 'GitHub Sans',
+      fontFamily: unquote(style.getPropertyValue(settingProperties.fontFamily)) || DEFAULT_FONT_FAMILY,
       fontSize: numberValue(style, 'fontSize', 8, 24),
       headingScale: numberValue(style, 'headingScale', 0.7, 1.5),
       lineHeight: numberValue(style, 'lineHeight', 0.5, 2),
@@ -225,6 +231,7 @@ export function parseImportedTheme(css: string, now = Date.now()) {
       accentColor: colorValue(style, 'accentColor'),
       mutedColor: colorValue(style, 'mutedColor'),
       sectionSpacing: numberValue(style, 'sectionSpacing', 8, 48),
+      layoutDensity: numberValue(style, 'layoutDensity', 0, 100),
       paperSize: paper,
     };
     return createCustomTheme(name, settings, css, '.resume-theme', now, id);

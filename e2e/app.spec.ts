@@ -48,7 +48,7 @@ const value = 42;
 ---`;
 
 const githubStyleContract = {
-  root: { selector: null, properties: ['font-family', 'font-size', 'line-height', 'font-weight', 'color', 'background-color', 'overflow-wrap'] },
+  root: { selector: null, properties: ['font-size', 'line-height', 'font-weight', 'color', 'background-color', 'overflow-wrap'] },
   h1: { selector: 'h1', properties: ['font-size', 'line-height', 'font-weight', 'color', 'margin-top', 'margin-bottom', 'padding-bottom', 'border-bottom-width', 'border-bottom-style', 'border-bottom-color'] },
   h2: { selector: 'h2', properties: ['font-size', 'line-height', 'font-weight', 'color', 'margin-top', 'margin-bottom', 'padding-bottom', 'border-bottom-width', 'border-bottom-style', 'border-bottom-color'] },
   h3: { selector: 'h3', properties: ['font-size', 'line-height', 'font-weight', 'color', 'margin-top', 'margin-bottom'] },
@@ -311,6 +311,50 @@ test('切换主题不重置设置且刷新后保持', async ({ page }) => {
   await expect(page.getByTestId('resume-page')).toHaveClass(/vivid/);
 });
 
+test('五套新字体会真实改变所有主题的正文和标题字形', async ({ page }) => {
+  test.setTimeout(60_000);
+  const fontSelect = page.getByTestId('font-family');
+  const expectedFonts = [
+    ['阿里普惠体2-55-Regular', 'Resume Alibaba PuHuiTi'],
+    ['苹果方正_Medium', 'Resume PingFang'],
+    ['思源黑体2.0_Normal', 'Resume Source Han Sans'],
+    ['思源宋体', 'Resume Source Han Serif'],
+    ['Times-New-Roman', 'Resume Times New Roman'],
+  ] as const;
+  await expect(fontSelect.locator('option')).toHaveCount(expectedFonts.length);
+  expect(await fontSelect.locator('option').allTextContents()).toEqual(expectedFonts.map(([label]) => label));
+  await page.getByTestId('theme-crisp').click();
+
+  const renderedWidths: number[] = [];
+  for (const [value, internalFamily] of expectedFonts) {
+    await fontSelect.selectOption(value);
+    await page.evaluate(async (family) => {
+      await document.fonts.load(`16px "${family}"`, '中文简历排版 Resume 2026');
+    }, internalFamily);
+    const metrics = await page.getByTestId('resume-page').evaluate((sheet) => {
+      const rootStyle = getComputedStyle(sheet);
+      const headingStyle = getComputedStyle(sheet.querySelector('h1')!);
+      const sample = document.createElement('span');
+      sample.textContent = '中文简历排版 Resume 2026 WMWM';
+      sample.style.cssText = `position:fixed;visibility:hidden;white-space:nowrap;font:400 32px ${rootStyle.fontFamily}`;
+      document.body.appendChild(sample);
+      const width = sample.getBoundingClientRect().width;
+      sample.remove();
+      return { rootFamily: rootStyle.fontFamily, headingFamily: headingStyle.fontFamily, width };
+    });
+    expect(metrics.rootFamily).toContain(internalFamily);
+    expect(metrics.headingFamily).toContain(internalFamily);
+    renderedWidths.push(Math.round(metrics.width * 10) / 10);
+  }
+
+  expect(new Set(renderedWidths).size).toBeGreaterThanOrEqual(4);
+  await page.screenshot({ path: path.join(artifactDir, 'font-times-new-roman.png'), fullPage: true });
+  await page.waitForTimeout(250);
+  await page.reload();
+  await expect(fontSelect).toHaveValue('Times-New-Roman');
+  await expect(page.getByTestId('resume-page')).toHaveCSS('font-family', /Resume Times New Roman/);
+});
+
 test('CodeMirror 可以编辑并实时更新中文预览', async ({ page }) => {
   const editor = page.locator('.cm-content');
   await editor.click();
@@ -432,6 +476,8 @@ test('导出有效的中文 PNG 和 PDF', async ({ page }) => {
   expect(htmlContent).toContain('陈一凡');
   expect(htmlContent).toContain('.theme.github');
   expect(htmlContent).toContain('--fontScale');
+  expect(htmlContent).toContain('data-density="35"');
+  expect(htmlContent).toContain('--densityBodyTop');
   await page.setContent(htmlContent);
   const exportedResume = page.locator('.resume-sheet');
   await expect(exportedResume.locator('blockquote > p')).toContainText('引用内容');
@@ -466,6 +512,95 @@ test('紧凑排版不会把纸张空白误算成第二页', async ({ page }) => 
   expect(actualPages).toBe(1);
 });
 
+test('智能一页自动调整排版并让内容贴合单页', async ({ page }) => {
+  await page.setViewportSize({ width: 2048, height: 1280 });
+  const fitButton = page.getByTestId('fit-one-page');
+  await expect(fitButton).toHaveText('智能一页');
+
+  await fitButton.click();
+
+  await expect(fitButton).toHaveText('已适配一页');
+  await expect(page.getByLabel('简历统计')).toContainText('1页');
+  await expect(page.getByTestId('preview-paper')).toHaveCount(1);
+  await expect(page.getByTestId('font-size')).toHaveValue('16');
+  expect(Number(await page.getByTestId('resume-page').getAttribute('data-density'))).toBeGreaterThan(35);
+  expect(Number(await page.getByTestId('font-size').inputValue())).toBeGreaterThanOrEqual(12);
+  expect(Number(await page.getByTestId('line-height').inputValue())).toBeGreaterThanOrEqual(1.2);
+  expect(Number(await page.getByTestId('heading-scale').inputValue())).toBeGreaterThanOrEqual(0.85);
+  expect(Number(await page.getByTestId('horizontal-padding').inputValue())).toBeGreaterThanOrEqual(16);
+  await expect.poll(() => page.getByTestId('resume-page').evaluate((sheet) => {
+    const rect = sheet.getBoundingClientRect();
+    const paddingBottom = Number.parseFloat(getComputedStyle(sheet).paddingBottom) || 0;
+    const contentBottom = Array.from(sheet.children).reduce((bottom, child) => (
+      Math.max(bottom, (child as HTMLElement).getBoundingClientRect().bottom - rect.top)
+    ), 0);
+    const pageHeight = Math.ceil(rect.width * (841.89 / 595.28)) - 1;
+    return pageHeight - contentBottom - paddingBottom;
+  })).toBeLessThan(2);
+  await page.screenshot({ path: path.join(artifactDir, 'smart-one-page.png'), fullPage: true });
+});
+
+test('排版密度可以独立切换并持久化', async ({ page }) => {
+  const density = page.getByTestId('layout-density');
+  await expect(density).toHaveValue('35');
+  const standardListMargin = await page.getByTestId('resume-page').evaluate((sheet) => {
+    const list = sheet.querySelector(':scope > ul');
+    return list ? Number.parseFloat(getComputedStyle(list).marginBottom) : -1;
+  });
+
+  await density.fill('100');
+
+  await expect(density).toHaveValue('100');
+  await expect(page.getByTestId('resume-page')).toHaveAttribute('data-density', '100');
+  const denseListMargin = await page.getByTestId('resume-page').evaluate((sheet) => {
+    const list = sheet.querySelector(':scope > ul');
+    return list ? Number.parseFloat(getComputedStyle(list).marginBottom) : -1;
+  });
+  expect(denseListMargin).toBeLessThan(standardListMargin);
+  await page.waitForTimeout(250);
+  await page.reload();
+  await expect(density).toHaveValue('100');
+});
+
+test('智能一页会修复旧版过度压缩的排版参数', async ({ page }) => {
+  await page.setViewportSize({ width: 2048, height: 1280 });
+  for (const [testId, value] of [
+    ['font-size', '12'],
+    ['line-height', '0.9'],
+    ['heading-scale', '0.8'],
+    ['horizontal-padding', '13'],
+    ['vertical-padding', '13'],
+    ['section-spacing', '18'],
+  ] as const) await page.getByTestId(testId).fill(value);
+
+  await page.getByTestId('fit-one-page').click();
+
+  await expect(page.getByTestId('fit-one-page')).toHaveText('已适配一页');
+  await expect(page.getByTestId('preview-paper')).toHaveCount(1);
+  expect(Number(await page.getByTestId('font-size').inputValue())).toBeGreaterThanOrEqual(12);
+  expect(Number(await page.getByTestId('line-height').inputValue())).toBeGreaterThanOrEqual(1.2);
+  expect(Number(await page.getByTestId('heading-scale').inputValue())).toBeGreaterThanOrEqual(0.85);
+  expect(Number(await page.getByTestId('horizontal-padding').inputValue())).toBeGreaterThanOrEqual(16);
+});
+
+test('超长内容保留多页而不突破可读性下限', async ({ page }) => {
+  await page.setViewportSize({ width: 2048, height: 1280 });
+  const sections = Array.from({ length: 24 }, (_, index) => `## 项目经历 ${index + 1}\n\n### 后端开发工程师 | 示例科技\n\n- 负责核心系统架构设计与稳定性治理，持续优化服务性能和交付质量\n- 建设监控告警与自动化发布体系，缩短故障发现和恢复时间\n- 推动团队工程规范落地，负责方案评审、人才培养和跨团队协作`);
+  await replaceMarkdown(page, ['# 张明', '资深软件工程师 | example@example.com', ...sections].join('\n\n'));
+
+  await page.getByTestId('fit-one-page').click();
+
+  await expect(page.getByTestId('fit-one-page')).toHaveText('建议保留多页');
+  await expect.poll(() => page.getByTestId('preview-paper').count()).toBeGreaterThan(1);
+  await expect(page.getByTestId('font-size')).toHaveValue('12');
+  await expect(page.getByTestId('line-height')).toHaveValue('1.2');
+  await expect(page.getByTestId('heading-scale')).toHaveValue('0.85');
+  await expect(page.getByTestId('horizontal-padding')).toHaveValue('16');
+  await expect(page.getByTestId('vertical-padding')).toHaveValue('8');
+  await expect(page.getByTestId('section-spacing')).toHaveValue('8');
+  await expect(page.getByTestId('layout-density')).toHaveValue('100');
+});
+
 test('生成桌面编辑器、主题页、模板页和移动端截图', async ({ page }) => {
   await page.setViewportSize({ width: 1680, height: 1060 });
   await page.screenshot({ path: path.join(artifactDir, 'desktop-editor.png'), fullPage: true });
@@ -477,4 +612,7 @@ test('生成桌面编辑器、主题页、模板页和移动端截图', async ({
   await page.goto('/');
   await page.getByRole('button', { name: '预览', exact: true }).click();
   await page.screenshot({ path: path.join(artifactDir, 'mobile-preview.png'), fullPage: true });
+  await page.getByRole('button', { name: '设置', exact: true }).click();
+  await expect(page.getByTestId('layout-density')).toBeVisible();
+  await page.screenshot({ path: path.join(artifactDir, 'mobile-settings.png'), fullPage: true });
 });

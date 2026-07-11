@@ -9,6 +9,7 @@ import { getTheme, themes } from './data/themes';
 import { createCustomTheme, loadCustomThemes, scopedCustomThemeCss, upsertCustomTheme } from './lib/customThemes';
 import { LanguageSelect, useI18n } from './i18n';
 import { loadState, saveState, STORAGE_KEY } from './lib/storage';
+import { fitResumeToOnePage, type FitToPageStatus } from './lib/pagination';
 import type { CustomTheme, ExportFormat, Locale, PersistedState, ResumeSettings } from './types';
 
 const MarkdownEditor = lazy(() => import('./components/MarkdownEditor').then((module) => ({ default: module.MarkdownEditor })));
@@ -49,7 +50,9 @@ function EditorApp() {
   const [exporting, setExporting] = useState<ExportFormat | null>(null);
   const [mobilePanel, setMobilePanel] = useState<'editor' | 'preview' | 'settings'>('editor');
   const [pageCount, setPageCount] = useState(1);
+  const [fitState, setFitState] = useState<'idle' | 'fitting' | FitToPageStatus>('idle');
   const previewRef = useRef<HTMLDivElement>(null);
+  const fitFeedbackTimer = useRef<number>(0);
   const previousLocale = useRef(locale);
   const characterCount = useMemo(() => countResumeCharacters(state.markdown), [state.markdown]);
   const readingMinutes = Math.max(1, Math.ceil(characterCount / 300));
@@ -58,6 +61,8 @@ function EditorApp() {
     const timer = window.setTimeout(() => saveState(state), 120);
     return () => window.clearTimeout(timer);
   }, [state]);
+
+  useEffect(() => () => window.clearTimeout(fitFeedbackTimer.current), []);
 
   useEffect(() => {
     const previous = previousLocale.current;
@@ -72,16 +77,19 @@ function EditorApp() {
   }, [locale]);
 
   const updateSetting = <K extends keyof ResumeSettings>(key: K, value: ResumeSettings[K]) => {
+    setFitState('idle');
     setState((current) => ({ ...current, settings: { ...current.settings, [key]: value } }));
   };
 
   const loadTemplate = (id: string) => {
     const template = getTemplate(id, locale);
+    setFitState('idle');
     setState((current) => ({ ...current, templateId: template.id, markdown: template.markdown }));
   };
 
   const selectTheme = (id: string) => {
     const customTheme = customThemes.find((theme) => theme.id === id);
+    setFitState('idle');
     setState((current) => ({ ...current, settings: customTheme?.settings ?? { ...current.settings, theme: id } }));
   };
 
@@ -108,7 +116,24 @@ function EditorApp() {
   const resetCurrentTheme = () => {
     const customTheme = customThemes.find((theme) => theme.id === state.settings.theme);
     const settings = customTheme?.settings ?? getTheme(state.settings.theme, locale).defaults;
+    setFitState('idle');
     setState((current) => ({ ...current, settings: { ...settings } }));
+  };
+
+  const fitOnePage = async () => {
+    if (!previewRef.current || fitState === 'fitting') return;
+    window.clearTimeout(fitFeedbackTimer.current);
+    setFitState('fitting');
+    await document.fonts.ready;
+    await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+    if (!previewRef.current) {
+      setFitState('idle');
+      return;
+    }
+    const result = fitResumeToOnePage(previewRef.current, state.settings);
+    setState((current) => ({ ...current, settings: result.settings }));
+    setFitState(result.status);
+    fitFeedbackTimer.current = window.setTimeout(() => setFitState('idle'), 2400);
   };
 
   const exportResume = async (format: ExportFormat) => {
@@ -159,11 +184,13 @@ function EditorApp() {
           templateId={state.templateId}
           customThemes={customThemes}
           exporting={exporting}
+          fitState={fitState}
           onChange={updateSetting}
           onTemplate={loadTemplate}
           onTheme={selectTheme}
           onSaveTheme={saveCurrentTheme}
           onResetTheme={resetCurrentTheme}
+          onFitOnePage={() => void fitOnePage()}
           onExport={(format) => void exportResume(format)}
         />
       </main>
