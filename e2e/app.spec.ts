@@ -120,14 +120,14 @@ test('按系统语言初始化并持久化用户的语言选择', async ({ brows
   const page = await context.newPage();
   try {
     await page.goto('/');
-    await expect(page).toHaveTitle('Markdown Resume Editor');
+    await expect(page).toHaveTitle('Markdown Resume Editor - Free PDF Resume Builder | Moli');
     await expect(page.getByTestId('language-select')).toHaveValue('en');
     await expect(page.getByRole('button', { name: 'Frontend Engineer', exact: true })).toBeVisible();
     await expect(page.getByTestId('resume-page')).toContainText('Professional Summary');
     await expect(page.getByTestId('theme-crisp')).toHaveText('Crisp');
 
     await page.getByTestId('language-select').selectOption('zh');
-    await expect(page).toHaveTitle('Markdown 简历编辑器');
+    await expect(page).toHaveTitle('Markdown 简历编辑器 - 免费在线制作并导出 PDF | 墨历');
     await expect(page.getByRole('button', { name: '前端开发工程师', exact: true })).toBeVisible();
     await expect(page.getByTestId('resume-page')).toContainText('个人简介');
     await expect.poll(() => page.evaluate(() => localStorage.getItem('markdown-resume-locale'))).toBe('zh');
@@ -146,7 +146,7 @@ test('按系统语言初始化并持久化用户的语言选择', async ({ brows
 });
 
 test('中文界面复刻三栏编辑器结构', async ({ page }) => {
-  await expect(page).toHaveTitle('Markdown 简历编辑器');
+  await expect(page).toHaveTitle('Markdown 简历编辑器 - 免费在线制作并导出 PDF | 墨历');
   await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', '/moli-icon.svg');
   await expect(page.getByText('MARKDOWN', { exact: true })).toBeVisible();
   await expect(page.getByTestId('preview-column').getByText('预览', { exact: true })).toBeVisible();

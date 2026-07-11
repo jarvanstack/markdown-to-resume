@@ -34,6 +34,26 @@ function CatalogShell({ children }: { children: React.ReactNode }) {
   return <div className="catalog-page"><CatalogHeader /><main className="catalog-main">{children}</main><footer className="catalog-footer"><Logo /><span>{m.footer}</span></footer></div>;
 }
 
+function CatalogSeoContent({ type }: { type: 'templates' | 'themes' }) {
+  const { m } = useI18n();
+  const content = type === 'templates'
+    ? { title: m.templateGuideTitle, intro: m.templateGuideIntro, points: m.templateGuidePoints, faqTitle: m.templateFaqTitle, faq: m.templateFaq }
+    : { title: m.themeGuideTitle, intro: m.themeGuideIntro, points: m.themeGuidePoints, faqTitle: m.themeFaqTitle, faq: m.themeFaq };
+  return (
+    <section className="catalog-seo" aria-labelledby={`${type}-guide-title`}>
+      <h2 id={`${type}-guide-title`}>{content.title}</h2>
+      <p className="catalog-seo-intro">{content.intro}</p>
+      <div className="catalog-seo-points">
+        {content.points.map((point) => <div key={point.title}><h3>{point.title}</h3><p>{point.text}</p></div>)}
+      </div>
+      <h2>{content.faqTitle}</h2>
+      <dl className="catalog-faq">
+        {content.faq.map((item) => <div key={item.question}><dt>{item.question}</dt><dd>{item.answer}</dd></div>)}
+      </dl>
+    </section>
+  );
+}
+
 export function ThemeCatalog() {
   const { locale, m } = useI18n();
   const [customThemes, setCustomThemes] = useState<CustomTheme[]>(loadCustomThemes);
@@ -89,6 +109,7 @@ export function ThemeCatalog() {
           </article>
         ))}
       </div>
+      <CatalogSeoContent type="themes" />
     </CatalogShell>
   );
 }
@@ -114,6 +135,7 @@ export function TemplateCatalog() {
           </div>
         </section>
       ))}
+      <CatalogSeoContent type="templates" />
     </CatalogShell>
   );
 }

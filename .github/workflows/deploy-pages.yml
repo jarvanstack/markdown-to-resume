@@ -39,11 +39,8 @@ jobs:
         env:
           VITE_BASE_PATH: /markdown-to-resume/
 
-      - name: Add static route entry points
+      - name: Prepare Pages artifact
         run: |
-          mkdir -p dist/templates dist/themes
-          cp dist/index.html dist/templates/index.html
-          cp dist/index.html dist/themes/index.html
           touch dist/.nojekyll
 
       - name: Configure Pages
