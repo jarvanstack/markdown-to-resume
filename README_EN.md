@@ -20,20 +20,20 @@
 
 Moli is a browser-based Markdown resume editor. There is no account to create and no document formatting to wrestle with: write your content, choose a template and theme, and see a professional resume take shape in real time.
 
-| | Feature | What it offers |
-| --- | --- | --- |
-| ✍️ | Markdown editor | A CodeMirror-powered editor with syntax highlighting, line numbers, folding, and line wrapping |
-| 👀 | Live preview | Instant updates while you write or restyle, with character, reading-time, and page counts |
-| 🧩 | Role templates | 18 templates for engineering, product, design, data, management, and more |
-| 🎨 | Resume themes | 11 built-in themes with adjustable typography, spacing, and colors |
-| 💾 | Custom themes | Save, rename, import, export, and reuse your own CSS themes |
-| 📄 | Multiple exports | Export to PDF, PNG, or HTML in A4 or Letter format |
-| 🌐 | Multilingual | English and Chinese interfaces with matching resume templates |
-| 🔒 | Local-first | Resume content and preferences stay in your current browser |
+|     | Feature          | What it offers                                                                                 |
+| --- | ---------------- | ---------------------------------------------------------------------------------------------- |
+| ✍️   | Markdown editor  | A CodeMirror-powered editor with syntax highlighting, line numbers, folding, and line wrapping |
+| 👀   | Live preview     | Instant updates while you write or restyle, with character, reading-time, and page counts      |
+| 🧩   | Role templates   | 18 templates for engineering, product, design, data, management, and more                      |
+| 🎨   | Resume themes    | 11 built-in themes with adjustable typography, spacing, and colors                             |
+| 💾   | Custom themes    | Save, rename, import, export, and reuse your own CSS themes                                    |
+| 📄   | Multiple exports | Export to PDF, PNG, or HTML in A4 or Letter format                                             |
+| 🌐   | Multilingual     | English and Chinese interfaces with matching resume templates                                  |
+| 🔒   | Local-first      | Resume content and preferences stay in your current browser                                    |
 
 ## 🖼️ Preview
 
-![](https://cdn.jarvans.com/blog/202320260711183630314.png)
+![](https://cdn.jarvans.com/blog/202320260711212609578.png)
 
 ## 🚀 How to Use
 
