@@ -14,42 +14,42 @@ interface SeoPage {
 export const seoPages: Record<Locale, Record<SeoRoute, SeoPage>> = {
   zh: {
     home: {
-      title: 'Markdown 简历编辑器 - 免费在线制作并导出 PDF | 墨历',
-      description: '免费在线 Markdown 简历编辑器，提供中文简历模板、实时预览与专业排版，一键导出 PDF、PNG 和 HTML。无需登录，简历数据仅保存在本地。',
-      keywords: 'Markdown简历,Markdown简历编辑器,在线简历制作,简历生成器,Markdown转PDF,免费简历编辑器,中文简历模板',
-      socialDescription: '用 Markdown 在线制作专业简历，实时预览并导出 PDF、PNG 或 HTML。无需登录，数据保存在本地。',
+      title: 'Markdown 简历编辑器 - 智能一页排版与免费 PDF 导出 | 墨历',
+      description: '免费在线 Markdown 简历编辑器，支持智能一页排版、中文简历模板、实时分页预览和字体间距微调，可导出 PDF、PNG、HTML。无需登录，数据仅保存在本地。',
+      keywords: 'Markdown简历,Markdown简历编辑器,智能一页简历,一页简历排版,简历压缩一页,在线简历制作,Markdown转PDF,PDF简历生成器,免费简历编辑器,中文简历模板',
+      socialDescription: '用智能一页自动优化间距，将 Markdown 简历排成清晰的一页并导出 PDF、PNG 或 HTML。',
     },
     templates: {
       title: '中文简历模板 - 18 套免费 Markdown 简历模板 | 墨历',
-      description: '18 套免费中文 Markdown 简历模板，覆盖程序员、产品经理、数据分析、设计师、应届生等岗位。在线编辑、实时预览并导出 PDF。',
-      keywords: '中文简历模板,Markdown简历模板,免费简历模板,程序员简历模板,应届生简历模板,产品经理简历模板,PDF简历模板',
-      socialDescription: '覆盖技术、产品、设计、数据、管理和应届生岗位的免费中文简历模板，可直接在线编辑并导出 PDF。',
+      description: '18 套免费中文 Markdown 简历模板，覆盖程序员、产品经理、数据分析、设计师和应届生。在线编辑，使用智能一页优化排版并导出 PDF。',
+      keywords: '中文简历模板,Markdown简历模板,免费简历模板,一页简历模板,程序员简历模板,应届生简历模板,产品经理简历模板,PDF简历模板',
+      socialDescription: '覆盖技术、产品、设计、数据、管理和应届生岗位的免费模板，可在线编辑、智能排成一页并导出 PDF。',
     },
     themes: {
-      title: '简历主题 - 11 套 Markdown 简历排版样式 | 墨历',
-      description: '11 套免费 Markdown 简历主题与专业排版样式，支持中文字体、字号、间距和颜色自定义。在线预览并导出清晰的 PDF 简历。',
-      keywords: '简历主题,简历排版,Markdown主题,简历样式,PDF简历排版,中文简历字体,GitHub简历主题',
-      socialDescription: '选择专业简历排版主题，自定义中文字体、字号、间距与颜色，并导出清晰的 PDF 简历。',
+      title: '简历排版与主题 - 11 套 Markdown 简历样式 | 墨历',
+      description: '11 套免费 Markdown 简历主题，支持智能一页、排版密度、中文字体、字号、间距和颜色微调，实时预览并导出清晰的 PDF 简历。',
+      keywords: '简历排版,简历主题,智能一页,一页简历排版,简历间距调整,Markdown主题,PDF简历排版,中文简历字体,GitHub简历主题',
+      socialDescription: '选择专业简历主题，用智能一页和精细密度控制优化版面，导出清晰的 PDF 简历。',
     },
   },
   en: {
     home: {
-      title: 'Markdown Resume Editor - Free PDF Resume Builder | Moli',
-      description: 'Free online Markdown resume editor with role-specific templates, live preview, professional themes, and PDF, PNG, or HTML export. No sign-up required.',
-      keywords: 'Markdown resume,Markdown resume editor,free resume builder,resume to PDF,online CV maker,resume templates',
-      socialDescription: 'Write a professional resume in Markdown, preview it live, and export it as PDF, PNG, or HTML for free.',
+      title: 'Markdown Resume Editor - Smart One-Page PDF Builder | Moli',
+      description: 'Free Markdown resume editor with Smart one-page fitting, live pagination, role templates, precise spacing controls, and PDF, PNG, or HTML export. No sign-up required.',
+      keywords: 'Markdown resume,Markdown resume editor,smart one-page resume,one page resume builder,fit resume to one page,Markdown to PDF,free resume builder,online CV maker,resume templates',
+      socialDescription: 'Fit a Markdown resume to one page with readable spacing, preview every page live, and export PDF, PNG, or HTML.',
     },
     templates: {
       title: 'Free Resume Templates - 18 Markdown CV Templates | Moli',
-      description: 'Choose from 18 free Markdown resume templates for software, product, data, design, management, students, and career changers. Edit online and export to PDF.',
-      keywords: 'free resume templates,Markdown resume template,developer resume template,student resume template,CV template,PDF resume',
-      socialDescription: '18 role-specific Markdown resume templates with realistic structure and measurable achievements, ready to edit and export.',
+      description: 'Choose from 18 free Markdown resume templates for software, product, data, design, management, students, and career changers. Edit online, fit to one page, and export PDF.',
+      keywords: 'free resume templates,Markdown resume template,one page resume template,developer resume template,student resume template,CV template,PDF resume',
+      socialDescription: '18 role-specific Markdown resume templates, ready to edit, fit to one page, and export as PDF.',
     },
     themes: {
-      title: 'Resume Themes - 11 Markdown CV Styles | Moli',
-      description: 'Choose from 11 free Markdown resume themes. Customize typography, spacing, margins, and color, preview every PDF page, and export a polished resume.',
-      keywords: 'resume themes,resume design,Markdown CSS theme,CV layout,professional resume style,GitHub resume theme',
-      socialDescription: 'Professional Markdown resume themes with customizable typography, spacing, margins, and colors.',
+      title: 'Resume Layouts & Themes - 11 Markdown CV Styles | Moli',
+      description: 'Choose 11 free Markdown resume themes with Smart one-page fitting, continuous density, typography, spacing, margins, and color controls for polished PDF resumes.',
+      keywords: 'resume layout,resume themes,smart one-page resume,fit resume to one page,Markdown CSS theme,CV layout,professional resume style,GitHub resume theme',
+      socialDescription: 'Professional Markdown resume themes with Smart one-page fitting and precise density, typography, spacing, margins, and color controls.',
     },
   },
 };
@@ -91,8 +91,8 @@ function structuredData(route: SeoRoute, locale: Locale, page: SeoPage) {
           description: page.description, applicationCategory: 'BusinessApplication', applicationSubCategory: 'Resume Builder', operatingSystem: 'Any', browserRequirements: 'Requires JavaScript',
           isAccessibleForFree: true, offers: { '@type': 'Offer', price: '0', priceCurrency: locale === 'zh' ? 'CNY' : 'USD' },
           featureList: locale === 'zh'
-            ? ['Markdown 简历实时预览', '中文和英文简历模板', 'PDF、PNG 和 HTML 导出', '自定义简历主题与排版', '本地数据存储']
-            : ['Live Markdown resume preview', 'English and Chinese resume templates', 'PDF, PNG, and HTML export', 'Custom resume themes and typography', 'Local data storage'],
+            ? ['智能一页简历排版', 'Markdown 简历实时分页预览', '0%–100% 排版密度控制', '中文和英文简历模板', 'PDF、PNG 和 HTML 导出', '中文字体与自定义主题', '本地数据存储']
+            : ['Smart one-page resume fitting', 'Live Markdown resume pagination', '0%–100% layout density control', 'English and Chinese resume templates', 'PDF, PNG, and HTML export', 'CJK fonts and custom themes', 'Local data storage'],
         },
       ],
     };

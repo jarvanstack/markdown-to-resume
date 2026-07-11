@@ -3,7 +3,7 @@
   <img src="public/moli-icon.svg" width="72" height="72" alt="Moli logo" />
   <h1>Moli</h1>
   <p><strong>Focus on your story and turn Markdown into a polished resume.</strong></p>
-  <p>Live preview, role-specific templates, flexible styling, and one-click export to PDF, PNG, or HTML.</p>
+  <p>Smart one-page fitting, live pagination, role-specific templates, precise styling, and export to PDF, PNG, or HTML.</p>
   <p><a href="https://jarvanstack.github.io/markdown-to-resume/"><strong>Live Demo</strong></a></p>
 
   <p>
@@ -24,8 +24,10 @@ Moli is a browser-based Markdown resume editor. There is no account to create an
 | --- | ---------------- | ---------------------------------------------------------------------------------------------- |
 | ✍️   | Markdown editor  | A CodeMirror-powered editor with syntax highlighting, line numbers, folding, and line wrapping |
 | 👀   | Live preview     | Instant updates while you write or restyle, with character, reading-time, and page counts      |
+| 🪄   | Smart one-page   | Optimizes structural spacing and layout within readable limits to fit a resume to one page      |
 | 🧩   | Role templates   | 18 templates for engineering, product, design, data, management, and more                      |
-| 🎨   | Resume themes    | 11 built-in themes with adjustable typography, spacing, and colors                             |
+| 🎨   | Precise layout   | 11 themes with continuous density, typography, spacing, margins, and color controls             |
+| 🔤   | CJK fonts        | Bundled Alibaba, Source Han Sans, and Source Han Serif fonts for reliable mixed-script output   |
 | 💾   | Custom themes    | Save, rename, import, export, and reuse your own CSS themes                                    |
 | 📄   | Multiple exports | Export to PDF, PNG, or HTML in A4 or Letter format                                             |
 | 🌐   | Multilingual     | English and Chinese interfaces with matching resume templates                                  |
@@ -33,14 +35,25 @@ Moli is a browser-based Markdown resume editor. There is no account to create an
 
 ## 🖼️ Preview
 
-![](https://cdn.jarvans.com/blog/202320260711212609578.png)
+![Moli Markdown resume editor with live preview and smart one-page layout](https://cdn.jarvans.com/blog/202320260711212609578.png)
+
+## 🪄 Smart One-Page
+
+Smart one-page measures the resume against the selected paper size and optimizes the actual rendered layout instead of scaling the entire document down:
+
+1. It first tightens structural spacing around paragraphs, lists, headings, and page margins.
+2. It then adjusts line height, heading scale, and body size only when needed.
+3. It respects readability limits and recommends multiple pages when the content is genuinely too long.
+4. For shorter resumes, it can add balanced whitespace so the content fills the page more naturally.
+
+The `0%–100%` layout-density slider remains available for precise manual control after fitting.
 
 ## 🚀 How to Use
 
 1. Write or edit your resume in Markdown in the left-hand editor.
 2. Choose a role template, theme, and paper size from the settings panel.
-3. Fine-tune the font, type size, line height, margins, section spacing, and colors.
-4. Review the pagination and final layout in the live preview.
+3. Use Smart one-page, or fine-tune density, font, type size, line height, margins, section spacing, and colors.
+4. Review the A4 or Letter pagination and final layout in the live preview.
 5. Select PDF, PNG, or HTML and export your resume.
 
 > [!IMPORTANT]

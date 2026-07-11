@@ -19,6 +19,7 @@ describe('SEO metadata', () => {
     expect(document.title).toBe(seoPages.zh.templates.title);
     expect(document.querySelector('meta[name="description"]')).toHaveAttribute('content', seoPages.zh.templates.description);
     expect(document.querySelector('meta[name="keywords"]')).toHaveAttribute('content', expect.stringContaining('中文简历模板'));
+    expect(document.querySelector('meta[name="keywords"]')).toHaveAttribute('content', expect.stringContaining('一页简历模板'));
     expect(document.querySelector('link[rel="canonical"]')).toHaveAttribute('href', 'https://jarvanstack.github.io/markdown-to-resume/templates/');
     expect(JSON.parse(document.querySelector('#structured-data')!.textContent!)).toMatchObject({
       '@type': 'CollectionPage',
@@ -33,5 +34,16 @@ describe('SEO metadata', () => {
     expect(document.title).toBe(seoPages.en.themes.title);
     expect(document.querySelector('meta[property="og:locale"]')).toHaveAttribute('content', 'en_US');
     expect(document.querySelector('meta[name="twitter:title"]')).toHaveAttribute('content', seoPages.en.themes.title);
+    expect(document.querySelector('meta[name="keywords"]')).toHaveAttribute('content', expect.stringContaining('smart one-page resume'));
+  });
+
+  it('advertises smart one-page fitting in the home metadata and feature list', () => {
+    applyPageSeo('zh', '/', '/');
+
+    expect(document.title).toContain('智能一页排版');
+    expect(document.querySelector('meta[name="description"]')).toHaveAttribute('content', expect.stringContaining('智能一页排版'));
+    const data = JSON.parse(document.querySelector('#structured-data')!.textContent!);
+    expect(data['@graph'][1].featureList).toContain('智能一页简历排版');
+    expect(data['@graph'][1].featureList).toContain('0%–100% 排版密度控制');
   });
 });
