@@ -1,0 +1,11 @@
+.theme.vivid { font-family: Karla, Inter, "Noto Sans SC", sans-serif; font-size: calc(18px * var(--fontScale)); line-height: var(--lineHeightScale); color: var(--textColor, #222); }
+.theme.vivid h1 { margin-top: 0; font-size: calc(2.25rem * var(--fontScale) * var(--headingScale)); font-weight: 400; }
+.theme.vivid h2 { color: var(--headerColor, #016ef1); font-size: calc(1.5rem * var(--fontScale) * var(--headingScale)); font-weight: 700; }
+.theme.vivid h3 { margin-top: .5em; color: var(--headerColor); font-size: calc(1.25rem * var(--fontScale) * var(--headingScale)); }
+.theme.vivid p { margin-top: .5rem; color: var(--textColor); }
+.theme.vivid a { color: var(--linkColor); border-bottom: 1px dotted; text-decoration: none; }
+.theme.vivid strong { color: var(--textColor); font-weight: 700; }
+.theme.vivid ul { margin-top: .5em; padding-left: 1em; list-style: none; }
+.theme.vivid li { position: relative; list-style: none; }
+.theme.vivid li:before { position: absolute; left: -1em; color: var(--linkColor); content: "◦"; font-weight: 700; }
+.theme.vivid hr { margin: 1em 0; border-top: 1px solid #ddd; }

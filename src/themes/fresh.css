@@ -1,0 +1,6 @@
+.theme.fresh { font-family: "Open Sans", "Noto Sans SC", sans-serif; font-size: calc(16px * var(--fontScale)); line-height: var(--lineHeightScale); color: var(--textColor); }
+.theme.fresh h1 { margin-top: 0; color: var(--headerColor); font-size: calc(2.25rem * var(--fontScale) * var(--headingScale)); }
+.theme.fresh h2 { display: inline-block; padding: 2px 8px; color: var(--linkColor); border: 1.5px solid var(--linkColor); border-radius: 3px; font-size: calc(.72rem * var(--fontScale) * var(--headingScale)); font-weight: 600; text-transform: uppercase; }
+.theme.fresh h3 { margin-top: .5em; color: var(--headerColor); font-size: calc(1rem * var(--fontScale) * var(--headingScale)); }
+.theme.fresh p { margin-top: .5rem; }.theme.fresh a { color: var(--linkColor); }
+.theme.fresh ul { padding-left: 16px; list-style: none; }.theme.fresh li { position: relative; list-style: none; }.theme.fresh li:before { position: absolute; left: -16px; color: var(--linkColor); content: "◆"; font-size: .45em; line-height: 2.6; }

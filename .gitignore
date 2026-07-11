@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Production and test output
+dist/
+coverage/
+playwright-report/
+test-results/
+artifacts/
+output/
+
+# Local workspace files
+tmp/
+doc/
+*.local
+.env
+.env.*
+!.env.example
+
+# Generated TypeScript and config files
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
+playwright.config.js
+playwright.config.d.ts
+
+# Operating system and editor files
+.DS_Store
+.idea/
+.vscode/

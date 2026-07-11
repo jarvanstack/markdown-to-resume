@@ -1,0 +1,6 @@
+.theme.stern { font-family: Montserrat, Inter, "Noto Sans SC", sans-serif; font-size: calc(14.5px * var(--fontScale)); line-height: var(--lineHeightScale); color: var(--textColor); }
+.theme.stern h1 { margin-top: 0; color: var(--headerColor); font-size: calc(2.4rem * var(--fontScale) * var(--headingScale)); font-weight: 800; }
+.theme.stern h2 { color: var(--headerColor); font-size: calc(1.15rem * var(--fontScale) * var(--headingScale)); font-weight: 300; }
+.theme.stern h3 { margin-top: .5em; color: var(--headerColor); font-size: calc(.9rem * var(--fontScale) * var(--headingScale)); font-weight: 600; }
+.theme.stern p { margin-top: .5rem; }.theme.stern a { color: var(--linkColor); }
+.theme.stern ul { padding-left: 12px; list-style: none; }.theme.stern li { position: relative; list-style: none; }.theme.stern li:before { position: absolute; left: -12px; color: var(--mutedColor); content: "·"; font-size: 1.4em; font-weight: 700; }

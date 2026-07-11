@@ -1,0 +1,14 @@
+.theme.crisp { font-family: Inter, "Noto Sans SC", sans-serif; font-size: calc(16px * var(--fontScale)); line-height: var(--lineHeightScale); color: var(--textColor, #444); }
+.theme.crisp h1 { margin-top: 0; color: var(--headerColor, #222); font-size: calc(2.25rem * var(--fontScale) * var(--headingScale)); font-weight: 800; text-align: left; }
+.theme.crisp h2 { position: relative; color: var(--headerColor, #222); font-size: calc(1.5rem * var(--fontScale) * var(--headingScale)); font-weight: 600; }
+.theme.crisp h2:before { position: absolute; bottom: -2px; left: 0; width: fit-content; height: 3px; background: var(--linkColor, #016ef1); content: ""; }
+.theme.crisp h3 { margin-top: .5em; color: var(--headerColor, #222); font-size: calc(1.25rem * var(--fontScale) * var(--headingScale)); font-weight: 600; }
+.theme.crisp h3 + p { margin-top: .2rem; }
+.theme.crisp p { margin-top: .5rem; color: var(--textColor, #444); }
+.theme.crisp a { color: var(--linkColor, #222); font-weight: 600; text-decoration: underline; }
+.theme.crisp hr { margin: 1em 0; border-top: 1px solid #ddd; }
+.theme.crisp strong { color: var(--textColor, #222); font-weight: 600; }
+.theme.crisp em { color: var(--textColor, #444); font-style: italic; }
+.theme.crisp ul { margin-top: .5em; padding-left: 12px; list-style: none; }
+.theme.crisp li { position: relative; color: var(--textColor, #444); list-style: none; }
+.theme.crisp li:before { position: absolute; left: -12px; color: var(--linkColor, #016ef1); content: "•"; font-weight: 600; }

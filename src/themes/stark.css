@@ -1,0 +1,8 @@
+.theme.stark { font-family: Nunito, Inter, "Noto Sans SC", sans-serif; font-size: calc(16px * var(--fontScale)); line-height: var(--lineHeightScale); color: var(--textColor, #444); }
+.theme.stark h1, .theme.stark h2, .theme.stark h3 { font-family: Inika, Inter, "Noto Sans SC", sans-serif; }
+.theme.stark h1 { margin-top: 0; color: var(--headerColor); font-size: calc(2.5rem * var(--fontScale) * var(--headingScale)); font-weight: 800; }
+.theme.stark h2 { display: flex; color: var(--headerColor); font-size: calc(1.5rem * var(--fontScale) * var(--headingScale)); font-weight: 600; }
+.theme.stark h2:after { align-self: end; flex-grow: 1; height: 1px; margin: 0 0 1rem 4px; background: var(--headerColor); content: ""; }
+.theme.stark h3 { margin-top: .5rem; color: var(--headerColor); font-size: calc(1.25rem * var(--fontScale) * var(--headingScale)); font-weight: 600; }
+.theme.stark p { margin-top: .5rem; }.theme.stark a { color: var(--linkColor); border-bottom: 1px dashed; text-decoration: none; }
+.theme.stark ul { margin-top: .5em; padding-left: 12px; list-style: none; }.theme.stark li { position: relative; list-style: none; }.theme.stark li:before { position: absolute; left: -12px; color: var(--linkColor); content: "*"; font-family: "Overpass Mono"; font-weight: 700; }

@@ -1,0 +1,7 @@
+.theme.sharp { font-family: "PT Sans", "Noto Sans SC", sans-serif; font-size: calc(16px * var(--fontScale)); line-height: var(--lineHeightScale); color: var(--textColor); }
+.theme.sharp h1 { margin-top: 0; color: var(--headerColor); font-size: calc(2.1rem * var(--fontScale) * var(--headingScale)); font-weight: 700; }
+.theme.sharp h2 { position: relative; padding-left: 1.2em; color: var(--linkColor); font-family: "Overpass Mono", monospace; font-size: calc(.8rem * var(--fontScale) * var(--headingScale)); font-weight: 400; }
+.theme.sharp h2:before { position: absolute; left: 0; content: "#"; font-weight: 700; }
+.theme.sharp h3 { margin-top: .5em; color: var(--headerColor); font-size: calc(1rem * var(--fontScale) * var(--headingScale)); }
+.theme.sharp p { margin-top: .5rem; }.theme.sharp a { color: var(--linkColor); }
+.theme.sharp ul { padding-left: 14px; list-style: none; }.theme.sharp li { position: relative; list-style: none; }.theme.sharp li:before { position: absolute; left: -14px; color: var(--linkColor); content: "▪"; }

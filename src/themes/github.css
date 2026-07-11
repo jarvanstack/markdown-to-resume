@@ -1,0 +1,22 @@
+.theme.github {
+  --borderColor-accent-emphasis: var(--linkColor, #0969da);
+  --borderColor-muted: var(--accentColor, #d1d9e0);
+  --fgColor-danger: #d1242f;
+  --bgColor-danger-muted: #ffebe9;
+  margin: 0 auto;
+  color: var(--textColor, #1f2328);
+  font-family: var(--fontName);
+  font-size: calc(16px * var(--fontScale));
+  line-height: var(--lineHeightScale, 1.5);
+}
+.theme.github h1, .theme.github h2, .theme.github h3, .theme.github h4, .theme.github h5, .theme.github h6 { color: var(--headerColor, #1f2328); }
+.theme.github h1 { border-bottom-color: var(--accentColorMuted, #d1d9e0b3); font-size: calc(2em * var(--headingScale)); }
+.theme.github h2 { border-bottom-color: var(--accentColorMuted, #d1d9e0b3); font-size: calc(1.5em * var(--headingScale)); }
+.theme.github h3 { font-size: calc(1.25em * var(--headingScale)); }.theme.github h4 { font-size: calc(1em * var(--headingScale)); }
+.theme.github h5 { font-size: calc(.875em * var(--headingScale)); }.theme.github h6 { color: var(--mutedColor, #59636e); font-size: calc(.85em * var(--headingScale)); }
+.theme.github > h2 { margin-top: var(--sectionSpacing, 24px); }
+.theme.github a { color: var(--linkColor, #0969da); }
+.theme.github blockquote { color: var(--mutedColor, #59636e); border-left-color: var(--accentColor, #d1d9e0); }
+.theme.github hr { background-color: var(--accentColor, #d1d9e0); }
+.theme.github table th, .theme.github table td { border-color: var(--accentColor, #d1d9e0); }
+.theme.github table tr { border-top-color: var(--accentColorMuted, #d1d9e0b3); }

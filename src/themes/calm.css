@@ -1,0 +1,6 @@
+.theme.calm { font-family: Lato, Inter, "Noto Sans SC", sans-serif; font-size: calc(16px * var(--fontScale)); line-height: var(--lineHeightScale); color: var(--textColor); }
+.theme.calm h1 { margin-top: 0; color: var(--headerColor); font-size: calc(2.25rem * var(--fontScale) * var(--headingScale)); font-weight: 900; }
+.theme.calm h2 { padding-left: 8px; color: var(--headerColor); border-left: 3px solid var(--linkColor); font-size: calc(.85rem * var(--fontScale) * var(--headingScale)); font-weight: 800; text-transform: uppercase; }
+.theme.calm h3 { margin-top: .5em; color: var(--headerColor); font-size: calc(1rem * var(--fontScale) * var(--headingScale)); }
+.theme.calm p { margin-top: .5rem; }.theme.calm a { color: var(--linkColor); font-weight: 600; }
+.theme.calm ul { padding-left: 14px; list-style: none; }.theme.calm li { position: relative; list-style: none; }.theme.calm li:before { position: absolute; left: -14px; color: var(--linkColor); content: "›"; font-size: 1.2em; font-weight: 700; }
