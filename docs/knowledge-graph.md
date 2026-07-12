@@ -3,7 +3,7 @@
 ## Graph Metadata
 
 - Canonical file: `docs/knowledge-graph.md`
-- Last verified: 2026-07-11
+- Last verified: 2026-07-12
 - Architecture: client-only React single-page application with three HTML entry points
 - Runtime boundary: browser; no application backend or remote resume-content service
 - Persistence boundary: browser `localStorage`
@@ -13,9 +13,9 @@
 
 ```mermaid
 flowchart LR
-    User["Resume author"] -->|"writes Markdown and adjusts settings"| Browser["Browser application"]
+    User["Resume author"] -->|"writes Markdown and theme CSS; adjusts settings"| Browser["Browser application"]
     Browser -->|"renders editor and catalogs"| User
-    Browser -->|"read/write resume, settings, themes, locale"| LocalStorage["Browser localStorage"]
+    Browser -->|"read/write resume, settings, themes, per-theme CSS, locale"| LocalStorage["Browser localStorage"]
     Browser -->|"downloads PDF, PNG, HTML, or theme CSS"| Downloads["Local files"]
     Browser -->|"opens source link in a new tab"| GitHub
     GitHub["GitHub repository"] -->|"master push"| Actions["GitHub Actions"]
@@ -24,7 +24,7 @@ flowchart LR
     Canonical["Canonical origin: resume.jarvans.com"] -->|"SEO URLs describe"| Browser
 ```
 
-The application does not upload resume content. Network delivery is limited to loading the deployed static site and any user-authored external links or images rendered from Markdown.
+The application does not upload resume content. Network delivery is limited to loading the deployed static site and any user-authored external links, Markdown images, or asset URLs in edited theme CSS.
 
 ## Module Dependency Graph
 
@@ -37,7 +37,7 @@ flowchart TD
     I18n --> Seo["src/lib/seo.ts"]
     I18n --> Types["src/types.ts"]
 
-    App --> Editor["MarkdownEditor"]
+    App --> Editor["MarkdownEditor and CssEditor"]
     App --> Preview["ResumePreview and PaginatedResumePreview"]
     App --> Settings["SettingsSidebar"]
     App --> Catalogs["TemplateCatalog and ThemeCatalog"]
@@ -46,10 +46,12 @@ flowchart TD
     App --> Themes["src/data/themes.ts"]
     App --> Storage["src/lib/storage.ts"]
     App --> CustomThemes["src/lib/customThemes.ts"]
+    App --> CssDrafts["src/lib/cssDraft.ts"]
     App --> Pagination["src/lib/pagination.ts"]
     App -.->|"lazy import on export"| Export["src/lib/export.ts"]
 
-    Editor --> CodeMirror["CodeMirror 6"]
+    Editor --> CodeMirror["CodeMirror 6 Markdown and CSS languages"]
+    CssDrafts --> PostCss["PostCSS parser"]
     Preview --> ReactMarkdown["react-markdown and remark-gfm"]
     Preview --> Themes
     Preview --> Density["src/lib/density.ts"]
@@ -71,6 +73,7 @@ flowchart TD
     Storage --> Density
     CustomThemes --> Types
     CustomThemes --> Themes
+    CssDrafts --> Themes
     Pagination --> Types
     Pagination --> Density
     Export --> Pagination
@@ -97,6 +100,9 @@ flowchart LR
     Persisted --> Settings["ResumeSettings"]
     AppState <-->|"debounced load/save"| Persisted
 
+    CssDraftKey["markdown-resume-theme-css-v1"] --> CssDrafts["theme id to complete CSS document"]
+    CssDrafts --> ActiveCss["active editable theme CSS"]
+
     Settings --> ThemeId["theme id"]
     Settings --> Typography["font, size, heading scale, line height"]
     Settings --> Spacing["density, padding, section spacing"]
@@ -108,6 +114,11 @@ flowchart LR
     CustomTheme --> ScopedCss["scoped CSS"]
     BuiltInTheme["Built-in theme metadata and raw CSS"] --> Settings
     BuiltInTheme --> ScopedCss
+    BuiltInTheme -->|"default document"| ActiveCss
+    CustomTheme -->|"default document"| ActiveCss
+    ThemeId --> ActiveCss
+    ActiveCss -->|"PostCSS rewrites source root"| RuntimeCss[".theme.css-editor-theme"]
+    RuntimeCss --> ScopedCss
     ZhTemplates["Chinese template seeds"] --> TemplateId
     EnTemplates["English template seeds"] --> TemplateId
     TemplateId --> Markdown
@@ -122,8 +133,9 @@ flowchart LR
 ```mermaid
 sequenceDiagram
     participant U as User
-    participant E as MarkdownEditor
+    participant E as MarkdownEditor or CssEditor
     participant A as EditorApp
+    participant C as CSS draft and PostCSS
     participant P as PaginatedResumePreview
     participant R as ReactMarkdown
     participant S as localStorage
@@ -135,9 +147,14 @@ sequenceDiagram
     P->>P: ResizeObserver recalculates page breaks
     P->>A: Report page count
     A-->>S: Save PersistedState after 120 ms debounce
+    U->>E: Select CSS and edit active theme document
+    E->>A: onChange(theme CSS)
+    A->>C: Rewrite source selectors to runtime theme scope
+    C->>P: Apply replacement CSS to measured and visible resumes
+    A-->>S: Save per-theme CSS map after 120 ms debounce
 ```
 
-Selecting a template replaces Markdown. Selecting a built-in theme changes only the theme id while preserving current adjustments; selecting a custom theme loads its saved `ResumeSettings`. Locale changes replace template Markdown only when the user has not edited the previous locale's template text.
+Selecting a template replaces Markdown. Selecting a built-in theme changes only the theme id while preserving current adjustments; selecting a custom theme loads its saved `ResumeSettings`. The CSS editor resolves each selected theme to its saved full document or the built-in/custom source, supports restoring that source, and applies safely transformed CSS under a dedicated runtime class. Locale changes replace template Markdown only when the user has not edited the previous locale's template text.
 
 ### Pagination And Smart One-Page
 
@@ -149,6 +166,7 @@ flowchart LR
     Breaks --> Copies["Clipped preview page copies"]
     Measure --> Fit["fitResumeToOnePage"]
     Settings["Current ResumeSettings"] --> Fit
+    RuntimeCss["Active runtime theme CSS"] --> Measure
     Fit -->|"compress or expand through staged candidates"| Result["fitted, overflow, or underflow"]
     Result --> Updated["Updated ResumeSettings"]
     Updated --> Measure
@@ -166,7 +184,8 @@ flowchart TD
     Canvas --> PNG["PNG Blob download"]
     Canvas --> PDF["Page-break crop plus jsPDF download"]
     Canonical --> HTML["Cloned resume HTML"]
-    Theme["Built-in or scoped custom theme CSS"] --> HTML
+    Theme["Active edited runtime theme CSS"] --> HTML
+    Theme --> Canonical
     Shared["Density and bundled font CSS"] --> HTML
     HTML --> HtmlDownload["Standalone HTML download"]
 ```
@@ -199,11 +218,11 @@ The catalog HTML files contain route-specific static metadata for crawlers; runt
 | Node | Path | Owns | Main consumers or dependencies |
 | --- | --- | --- | --- |
 | Bootstrap | `src/main.tsx` | React root and provider composition | `App`, `LocaleProvider`, global styles |
-| Route and use-case coordinator | `src/App.tsx` | Route choice, editor state, template/theme selection, fit/export commands | All workspace components and core libraries |
+| Route and use-case coordinator | `src/App.tsx` | Route choice, source tabs, editor state, per-theme CSS documents, template/theme selection, fit/export commands | All workspace components and core libraries |
 | Locale and messages | `src/i18n.tsx` | Locale detection, selection, persistence, Chinese/English UI text | All user-facing pages, SEO |
 | Shared domain contracts | `src/types.ts` | Theme, paper, export, locale, settings, persisted-state types | Data, components, storage, pagination, export |
-| Markdown editor | `src/components/MarkdownEditor.tsx` | Controlled CodeMirror adapter | `EditorApp`, CodeMirror |
-| Resume rendering | `src/components/ResumePreview.tsx` | Markdown rendering, CSS variables, measured DOM, clipped page copies | Workspace, catalogs, pagination |
+| Source editors | `src/components/MarkdownEditor.tsx` | Shared controlled CodeMirror adapter with Markdown and CSS language modes | `EditorApp`, CodeMirror language packages |
+| Resume rendering | `src/components/ResumePreview.tsx` | Markdown rendering, original theme data id, runtime theme class, CSS variables, measured DOM, clipped page copies | Workspace, catalogs, pagination |
 | Settings UI | `src/components/SettingsSidebar.tsx` | User controls and export-format selection | `EditorApp`, theme/template data, i18n |
 | Catalog pages | `src/components/CatalogPages.tsx` | Theme/template discovery and custom-theme operations | Preview, data, i18n, custom themes |
 | GitHub repository link | `src/components/GitHubLink.tsx` | Shared accessible source-repository control and `github.com/jarvanstack/markdown-to-resume` destination | Editor mobile header, settings desktop header, catalog headers, Lucide icon |
@@ -212,6 +231,7 @@ The catalog HTML files contain route-specific static metadata for crawlers; runt
 | Built-in theme data | `src/data/themes.ts` | 11 themes, defaults, names, raw scoped CSS, font stacks | App, settings, catalogs, preview, storage |
 | State persistence | `src/lib/storage.ts` | v3 state storage key, defaults, parse fallback, missing-field merge | `EditorApp` |
 | Custom themes | `src/lib/customThemes.ts` | Theme storage, max-10 retention, CSS serialization/import/scoping | App and theme catalog |
+| Theme CSS drafts | `src/lib/cssDraft.ts` | Per-theme full CSS storage, limits, PostCSS source/runtime/portable scoping, safe fallback | `EditorApp`, custom-theme saving, preview styling, HTML export |
 | Density model | `src/lib/density.ts` | Normalization and interpolated structural CSS variables | Preview, pagination, storage |
 | Pagination and fitting | `src/lib/pagination.ts` | Paper geometry, measurement, breaks, readable fit stages | Preview and export; commanded by App |
 | Export | `src/lib/export.ts` | Browser-side PNG, PDF, and standalone HTML downloads | Lazy-loaded by App |
@@ -242,6 +262,8 @@ The catalog HTML files contain route-specific static metadata for crawlers; runt
 11. PDF page geometry uses the same A4/Letter point definitions and page-break calculation as live preview.
 12. Every repository change has a detailed `docs/plan/*.md` record and a corresponding knowledge-graph ledger update.
 13. Every application header variant that exposes the language selector renders the shared GitHub repository link immediately after it; the external destination opens in a separate, non-opener browser context.
+14. Every built-in or custom theme supplies the CSS editor's default complete document; saved edits are isolated by theme id and never modify checked-in theme files or stored custom-theme records in place.
+15. Editor preview resumes use `.theme.css-editor-theme` plus the original `data-theme-id`; only PostCSS-transformed CSS is injected, `@import` is removed, shell selectors are nested under the runtime theme, and malformed edits fall back to the original theme CSS.
 
 ## Change Impact Map
 
@@ -252,6 +274,7 @@ The catalog HTML files contain route-specific static metadata for crawlers; runt
 | Pagination or paper size | `pagination.ts`, `ResumePreview.tsx`, `export.ts`, preview CSS, settings | E2E pagination, smart-fit, PDF tests |
 | Built-in theme or font | `themes.ts`, `src/themes/`, font assets, custom-theme serialization | Theme selection/reset/download/import and visual/export checks |
 | Custom themes | `customThemes.ts`, App theme state, `CatalogPages.tsx`, `SettingsSidebar.tsx` | Theme save/reset/import/rename/delete E2E tests |
+| Live theme CSS editing | `cssDraft.ts`, source editors, `App.tsx`, `ResumePreview.tsx`, theme/density/global CSS, HTML export | CSS-draft unit tests plus E2E default source, theme switching, reset, scoping, persistence, preview, save-theme, and export checks |
 | Templates | Both locale data files, quick ids, catalogs, storage default/migration | Template/resource unit tests and locale/catalog E2E tests |
 | Locale or UI copy | `i18n.tsx`, both template sets, SEO if searchable, affected components | Locale persistence/switch E2E and resource parity unit tests |
 | Route or SEO | App path selection, route HTML entry, `seo.ts`, sitemap/robots, Vite inputs | SEO unit and E2E tests plus production-base build |
@@ -266,6 +289,7 @@ The catalog HTML files contain route-specific static metadata for crawlers; runt
 | Test suite | Protects |
 | --- | --- |
 | `src/lib/storage.test.ts` | Defaults, persisted-state validation/migration, template/theme completeness, locale detection/message parity |
+| `src/lib/cssDraft.test.ts` | Per-theme CSS map normalization/limits, built-in/custom/runtime/portable selector rewriting, nested-rule and keyframe handling, import removal, malformed-CSS fallback |
 | `src/lib/seo.test.ts` | Route resolution and locale-specific runtime metadata |
 | `e2e/app.spec.ts` | Locale behavior, workspace and header actions, external-repository link placement/security, themes, templates, fonts, Markdown/GFM, persistence, preview pagination, smart fitting, three export formats, responsiveness, screenshots |
 | `e2e/seo.spec.ts` | Independent crawlable HTML responses and runtime canonical/content for templates and themes |
@@ -284,3 +308,4 @@ Every change must append a row. “Graph update” names the relationships or se
 | --- | --- | --- | --- |
 | 2026-07-11 | [`Project knowledge graph and change protocol`](plan/2026-07-11-project-knowledge-graph.md) | `AGENT.md`, `AGENTS.md`, `docs/plan/*.md`, `docs/knowledge-graph.md` | Established the complete baseline graph and governance nodes/edges; synchronized the baseline with the current `resume.jarvans.com` SEO origin without modifying application runtime files. |
 | 2026-07-11 | [`Add GitHub repository link to header actions`](plan/2026-07-11-github-repository-link.md) | `GitHubLink`, `EditorApp`, `SettingsSidebar`, `CatalogPages`, application styles, E2E tests | Connected all language-bearing header variants to the source repository through the shared adjacent link, recorded its new-tab security invariant, and expanded header-action impact and test coverage. |
+| 2026-07-12 | [`Add live CSS editor tab`](plan/2026-07-12-live-css-editor.md) | `EditorApp`, source editors, panel chrome, resume rendering, theme CSS drafts, density/application/export CSS, i18n, dependencies, unit/E2E tests | Added per-theme complete CSS ownership and persistence, PostCSS runtime/portable scoping, replacement-theme rendering and export edges, CSS edit/persist/preview flow, isolation/fallback invariants, and matching impact/test coverage. |

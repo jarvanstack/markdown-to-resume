@@ -1,3 +1,4 @@
+import { css } from '@codemirror/lang-css';
 import { markdown } from '@codemirror/lang-markdown';
 import CodeMirror from '@uiw/react-codemirror';
 import { EditorView } from '@codemirror/view';
@@ -17,20 +18,21 @@ const editorTheme = EditorView.theme({
   '&.cm-focused': { outline: 'none' },
 });
 
-interface MarkdownEditorProps {
+interface SourceEditorProps {
   value: string;
   onChange: (value: string) => void;
+  ariaLabel: string;
+  language: ReturnType<typeof markdown>;
 }
 
-export function MarkdownEditor({ value, onChange }: MarkdownEditorProps) {
-  const { m } = useI18n();
+function SourceEditor({ value, onChange, ariaLabel, language }: SourceEditorProps) {
   return (
     <CodeMirror
-      aria-label={m.markdownEditor}
+      aria-label={ariaLabel}
       className="code-editor"
       value={value}
       height="100%"
-      extensions={[markdown(), EditorView.lineWrapping, editorTheme]}
+      extensions={[language, EditorView.lineWrapping, editorTheme]}
       basicSetup={{
         lineNumbers: true,
         foldGutter: true,
@@ -41,4 +43,19 @@ export function MarkdownEditor({ value, onChange }: MarkdownEditorProps) {
       onChange={onChange}
     />
   );
+}
+
+interface EditorProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+export function MarkdownEditor(props: EditorProps) {
+  const { m } = useI18n();
+  return <SourceEditor {...props} ariaLabel={m.markdownEditor} language={markdown()} />;
+}
+
+export function CssEditor(props: EditorProps) {
+  const { m } = useI18n();
+  return <SourceEditor {...props} ariaLabel={m.cssEditor} language={css()} />;
 }

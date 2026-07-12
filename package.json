@@ -12,12 +12,14 @@
     "check": "npm run test && npm run build && npm run test:e2e"
   },
   "dependencies": {
+    "@codemirror/lang-css": "^6.3.1",
     "@codemirror/lang-markdown": "^6.3.4",
     "@uiw/react-codemirror": "^4.23.12",
     "github-markdown-css": "5.9.0",
     "html-to-image": "^1.11.13",
     "jspdf": "^4.2.1",
     "lucide-react": "^0.525.0",
+    "postcss": "^8.5.17",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-markdown": "^10.1.0",

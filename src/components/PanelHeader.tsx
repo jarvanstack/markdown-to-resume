@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Eye } from 'lucide-react';
 
 interface PanelHeaderProps {
-  label: string;
+  label: ReactNode;
   tone: 'editor' | 'preview';
   children?: ReactNode;
 }

@@ -50,14 +50,14 @@ export function exportHtml(element: HTMLElement, themeCss: string, locale: Local
     * { box-sizing: border-box; letter-spacing: 0; }
     html, body { margin: 0; background: #fff; }
     body { color: #1f2328; }
+    ${themeCss}
     .resume-sheet { width: 100%; max-width: 816px; min-height: 100vh; margin: 0 auto; padding: var(--yPaddingScale) var(--xPaddingScale); background: #fff; color: var(--textColor); font-family: var(--fontName); }
     .resume-sheet > :first-child { margin-top: 0 !important; }
-    .resume-sheet:not(.github) > h2 { margin-top: var(--sectionSpacing); }
-    .resume-sheet:not(.github) p, .resume-sheet:not(.github) ul, .resume-sheet:not(.github) ol { margin-bottom: 0; }
+    .resume-sheet:not([data-theme-id="github"]) > h2 { margin-top: var(--sectionSpacing); }
+    .resume-sheet:not([data-theme-id="github"]) p, .resume-sheet:not([data-theme-id="github"]) ul, .resume-sheet:not([data-theme-id="github"]) ol { margin-bottom: 0; }
     .resume-sheet blockquote { margin-inline: 0; }
-    .resume-sheet:not(.github) hr { height: 0; border: 0; }
-    .resume-sheet:not(.github), .resume-sheet:not(.github) a { overflow-wrap: anywhere; }
-    ${themeCss}
+    .resume-sheet:not([data-theme-id="github"]) hr { height: 0; border: 0; }
+    .resume-sheet:not([data-theme-id="github"]), .resume-sheet:not([data-theme-id="github"]) a { overflow-wrap: anywhere; }
     ${densityCss}
     ${fontCss}
     @media print { .resume-sheet { max-width: none; } }

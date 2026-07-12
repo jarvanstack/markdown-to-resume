@@ -33,16 +33,19 @@ interface ResumePreviewProps {
   compact?: boolean;
   className?: string;
   ariaHidden?: boolean;
+  themeClassName?: string;
 }
 
-export function ResumePreview({ markdown, settings, previewRef, compact = false, className = '', ariaHidden = false }: ResumePreviewProps) {
-  const markdownBodyClass = settings.theme === 'github' ? ' markdown-body' : '';
+export function ResumePreview({ markdown, settings, previewRef, compact = false, className = '', ariaHidden = false, themeClassName }: ResumePreviewProps) {
+  const renderedTheme = themeClassName ?? settings.theme;
+  const markdownBodyClass = !themeClassName && settings.theme === 'github' ? ' markdown-body' : '';
   const layoutDensity = normalizeLayoutDensity(settings.layoutDensity);
   return (
     <div
       ref={previewRef}
-      className={`resume-sheet theme ${settings.theme}${markdownBodyClass} paper-${settings.paperSize.toLowerCase()}${compact ? ' compact' : ''}${className ? ` ${className}` : ''}`}
+      className={`resume-sheet theme ${renderedTheme}${markdownBodyClass} paper-${settings.paperSize.toLowerCase()}${compact ? ' compact' : ''}${className ? ` ${className}` : ''}`}
       style={resumeStyle(settings)}
+      data-theme-id={settings.theme}
       data-density={layoutDensity}
       data-testid={compact ? undefined : 'resume-page'}
       aria-hidden={ariaHidden || undefined}
@@ -65,9 +68,10 @@ interface PaginatedResumePreviewProps {
   settings: ResumeSettings;
   previewRef: RefObject<HTMLDivElement | null>;
   onPageCount: (count: number) => void;
+  themeClassName?: string;
 }
 
-export function PaginatedResumePreview({ markdown, settings, previewRef, onPageCount }: PaginatedResumePreviewProps) {
+export function PaginatedResumePreview({ markdown, settings, previewRef, onPageCount, themeClassName }: PaginatedResumePreviewProps) {
   const [breaks, setBreaks] = useState<number[]>([1]);
   const [renderWidth, setRenderWidth] = useState(0);
 
@@ -107,13 +111,13 @@ export function PaginatedResumePreview({ markdown, settings, previewRef, onPageC
           <div className={`preview-paper paper-${settings.paperSize.toLowerCase()}`} data-testid="preview-paper" key={`${pageStart}-${pageEnd}`}>
             <div className="preview-page-clip" style={{ top: pageTop, height: Math.max(1, pageEnd - pageStart) }}>
               <div className="preview-page-offset" style={{ transform: `translateY(${-pageStart}px)` }}>
-                <ResumePreview markdown={markdown} settings={settings} className="preview-page-copy" compact ariaHidden />
+                <ResumePreview markdown={markdown} settings={settings} className="preview-page-copy" compact ariaHidden themeClassName={themeClassName} />
               </div>
             </div>
           </div>
         );
       })}
-      <ResumePreview markdown={markdown} settings={settings} previewRef={previewRef} className="resume-measure" />
+      <ResumePreview markdown={markdown} settings={settings} previewRef={previewRef} className="resume-measure" themeClassName={themeClassName} />
     </div>
   );
 }

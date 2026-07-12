@@ -48,6 +48,10 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 .editor-column, .preview-column { display: flex; min-width: 0; min-height: 0; flex-direction: column; border-right: 1px solid var(--app-border); }
 .panel-header { display: flex; flex: 0 0 40px; align-items: center; justify-content: space-between; gap: 9px; height: 40px; padding: 0 10px; border-bottom: 1px solid var(--app-border); background: var(--app-surface); color: var(--app-text-muted); font-size: 11px; font-weight: 800; text-transform: uppercase; }
 .panel-title { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+.editor-source-tabs { display: inline-flex; align-self: stretch; height: 40px; margin: 0 0 0 2px; }
+.editor-source-tabs button { position: relative; height: 40px; padding: 0 11px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--app-text-muted); font-size: 11px; font-weight: 800; text-transform: uppercase; cursor: pointer; }
+.editor-source-tabs button:hover { background: var(--app-surface-subtle); color: var(--app-text-secondary); }
+.editor-source-tabs button.active { border-bottom-color: var(--app-primary); color: var(--app-primary); }
 .panel-icon { color: var(--app-text-muted); }
 .panel-brand-icon { display: block; width: 18px; height: 18px; }
 .panel-dot { width: 8px; height: 8px; border-radius: 50%; }
@@ -56,7 +60,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 .preview-stats span { display: inline-flex; align-items: center; gap: .3em; }
 .preview-stats svg { color: var(--app-primary); }
 .preview-stats i { width: 1px; height: 1em; background: var(--app-border-strong); }
-.code-editor { flex: 1; min-height: 0; overflow: hidden; }
+.source-editor-panel { display: flex; flex: 1; min-width: 0; min-height: 0; }
+.code-editor { flex: 1; min-width: 0; min-height: 0; overflow: hidden; }
 .code-editor .cm-editor { height: 100%; }
 .editor-loading { display: grid; flex: 1; place-items: center; color: var(--app-text-muted); font-size: 11px; }
 .preview-stage { container-type: inline-size; flex: 1; min-height: 0; overflow: auto; padding: 24px; background: var(--app-preview-bg); }
@@ -74,12 +79,12 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 .resume-sheet.paper-a4 { min-height: min(calc((100cqw - 2px) * 1.4143), 1154px); }
 .resume-sheet.paper-letter { min-height: min(calc((100cqw - 2px) * 1.2941), 1056px); }
 .resume-sheet > :first-child { margin-top: 0 !important; }
-.resume-sheet:not(.github) > h2 { margin-top: var(--sectionSpacing); }
-.resume-sheet:not(.github) p { margin-bottom: 0; }
-.resume-sheet:not(.github) ul, .resume-sheet:not(.github) ol { margin-bottom: 0; }
+.resume-sheet:not([data-theme-id="github"]) > h2 { margin-top: var(--sectionSpacing); }
+.resume-sheet:not([data-theme-id="github"]) p { margin-bottom: 0; }
+.resume-sheet:not([data-theme-id="github"]) ul, .resume-sheet:not([data-theme-id="github"]) ol { margin-bottom: 0; }
 .resume-sheet blockquote { margin-inline: 0; }
-.resume-sheet:not(.github) hr { height: 0; border: 0; }
-.resume-sheet:not(.github), .resume-sheet:not(.github) a { overflow-wrap: anywhere; }
+.resume-sheet:not([data-theme-id="github"]) hr { height: 0; border: 0; }
+.resume-sheet:not([data-theme-id="github"]), .resume-sheet:not([data-theme-id="github"]) a { overflow-wrap: anywhere; }
 
 .sidebar { min-width: 0; overflow-y: auto; border-left: 0; background: var(--app-surface); color: var(--app-text); }
 .sidebar button { cursor: pointer; }
@@ -121,6 +126,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 @keyframes spin { to { transform: rotate(360deg); } }
 .reset-button { display: grid; place-items: center; width: 27px; height: 27px; border: 1px solid var(--app-border); border-radius: 5px; background: var(--app-surface); color: var(--app-text-muted); }
 .reset-button:hover { border-color: var(--app-primary-border); background: var(--app-primary-soft); color: var(--app-primary-hover); }
+.reset-button:disabled { opacity: .4; cursor: default; }
+.css-reset-button { flex: 0 0 27px; cursor: pointer; }
 .color-row { display: flex; align-items: center; justify-content: space-between; min-height: 38px; border-bottom: 1px solid var(--app-surface-muted); color: var(--app-text-secondary); font-size: 11px; }
 .color-row:last-child { border-bottom: 0; }
 .color-row > span:last-child { display: flex; align-items: center; gap: 7px; }

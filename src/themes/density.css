@@ -8,6 +8,6 @@
 .resume-sheet.theme > h2 { margin-bottom: var(--densityH2Bottom); }
 .resume-sheet.theme > h3,
 .resume-sheet.theme > h4 { margin-top: var(--densitySubheadingTop); margin-bottom: var(--densitySubheadingBottom); }
-.resume-sheet.theme.github > h1,
-.resume-sheet.theme.github > h2 { padding-bottom: var(--densityHeadingPadding); }
+.resume-sheet.theme[data-theme-id="github"] > h1,
+.resume-sheet.theme[data-theme-id="github"] > h2 { padding-bottom: var(--densityHeadingPadding); }
 .resume-sheet.theme > hr { margin: var(--densityRuleGap) 0; }

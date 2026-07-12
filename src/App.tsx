@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import { Clock3, Files, FileText, Settings2 } from 'lucide-react';
+import { Clock3, Files, FileText, RotateCcw, Settings2 } from 'lucide-react';
 import { PanelHeader } from './components/PanelHeader';
 import { GitHubLink } from './components/GitHubLink';
 import { PaginatedResumePreview, resumeStyle } from './components/ResumePreview';
@@ -10,10 +10,12 @@ import { getTheme, themes } from './data/themes';
 import { createCustomTheme, loadCustomThemes, scopedCustomThemeCss, upsertCustomTheme } from './lib/customThemes';
 import { LanguageSelect, useI18n } from './i18n';
 import { loadState, saveState, STORAGE_KEY } from './lib/storage';
+import { loadThemeCssDrafts, normalizeThemeCss, portableThemeCss, RUNTIME_THEME_CLASS, safeRuntimeThemeCss, saveThemeCssDrafts } from './lib/cssDraft';
 import { fitResumeToOnePage, type FitToPageStatus } from './lib/pagination';
 import type { CustomTheme, ExportFormat, Locale, PersistedState, ResumeSettings } from './types';
 
 const MarkdownEditor = lazy(() => import('./components/MarkdownEditor').then((module) => ({ default: module.MarkdownEditor })));
+const CssEditor = lazy(() => import('./components/MarkdownEditor').then((module) => ({ default: module.CssEditor })));
 
 function countResumeCharacters(markdown: string) {
   const plainText = markdown
@@ -44,10 +46,34 @@ function initialState(customThemes: CustomTheme[], locale: Locale): PersistedSta
   };
 }
 
+function RuntimeThemeStyle({ css }: { css: string }) {
+  const styleRef = useRef<HTMLStyleElement | null>(null);
+
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.dataset.runtimeThemeCss = 'true';
+    const firstAppStylesheet = document.head.querySelector('link[rel="stylesheet"], style[data-vite-dev-id]');
+    document.head.insertBefore(style, firstAppStylesheet);
+    styleRef.current = style;
+    return () => {
+      style.remove();
+      styleRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (styleRef.current) styleRef.current.textContent = css;
+  }, [css]);
+
+  return null;
+}
+
 function EditorApp() {
   const { locale, m } = useI18n();
   const [customThemes, setCustomThemes] = useState<CustomTheme[]>(loadCustomThemes);
   const [state, setState] = useState<PersistedState>(() => initialState(customThemes, locale));
+  const [sourceTab, setSourceTab] = useState<'markdown' | 'css'>('markdown');
+  const [themeCssDrafts, setThemeCssDrafts] = useState(loadThemeCssDrafts);
   const [exporting, setExporting] = useState<ExportFormat | null>(null);
   const [mobilePanel, setMobilePanel] = useState<'editor' | 'preview' | 'settings'>('editor');
   const [pageCount, setPageCount] = useState(1);
@@ -57,11 +83,24 @@ function EditorApp() {
   const previousLocale = useRef(locale);
   const characterCount = useMemo(() => countResumeCharacters(state.markdown), [state.markdown]);
   const readingMinutes = Math.max(1, Math.ceil(characterCount / 300));
+  const activeCustomTheme = customThemes.find((theme) => theme.id === state.settings.theme);
+  const originalThemeCss = activeCustomTheme?.css ?? getTheme(state.settings.theme, locale).css;
+  const activeThemeCss = themeCssDrafts[state.settings.theme] ?? originalThemeCss;
+  const runtimeThemeCss = useMemo(
+    () => safeRuntimeThemeCss(activeThemeCss, originalThemeCss, state.settings.theme, !!activeCustomTheme),
+    [activeCustomTheme, activeThemeCss, originalThemeCss, state.settings.theme],
+  );
+  const hasThemeCssDraft = Object.prototype.hasOwnProperty.call(themeCssDrafts, state.settings.theme);
 
   useEffect(() => {
     const timer = window.setTimeout(() => saveState(state), 120);
     return () => window.clearTimeout(timer);
   }, [state]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => saveThemeCssDrafts(themeCssDrafts), 120);
+    return () => window.clearTimeout(timer);
+  }, [themeCssDrafts]);
 
   useEffect(() => () => window.clearTimeout(fitFeedbackTimer.current), []);
 
@@ -102,8 +141,8 @@ function EditorApp() {
     const theme = createCustomTheme(
       name,
       state.settings,
-      currentCustom?.css ?? currentBuiltIn.css,
-      currentCustom ? '.resume-theme' : currentBuiltIn.id,
+      portableThemeCss(activeThemeCss, originalThemeCss, state.settings.theme, !!currentCustom),
+      '.resume-theme',
     );
     const nextThemes = upsertCustomTheme(theme, customThemes);
     setCustomThemes(nextThemes);
@@ -119,6 +158,20 @@ function EditorApp() {
     const settings = customTheme?.settings ?? getTheme(state.settings.theme, locale).defaults;
     setFitState('idle');
     setState((current) => ({ ...current, settings: { ...settings } }));
+  };
+
+  const updateThemeCss = (css: string) => {
+    const themeId = state.settings.theme;
+    setThemeCssDrafts((current) => ({ ...current, [themeId]: normalizeThemeCss(css) }));
+  };
+
+  const resetThemeCss = () => {
+    const themeId = state.settings.theme;
+    setThemeCssDrafts((current) => {
+      const next = { ...current };
+      delete next[themeId];
+      return next;
+    });
   };
 
   const fitOnePage = async () => {
@@ -145,9 +198,7 @@ function EditorApp() {
       if (format === 'pdf') await exporter.exportPdf(previewRef.current, state.settings.paperSize);
       else if (format === 'png') await exporter.exportPng(previewRef.current);
       else {
-        const customTheme = customThemes.find((theme) => theme.id === state.settings.theme);
-        const themeCss = customTheme ? scopedCustomThemeCss([customTheme]) : getTheme(state.settings.theme, locale).css;
-        exporter.exportHtml(previewRef.current, themeCss, locale, m.resumeDocumentTitle);
+        exporter.exportHtml(previewRef.current, runtimeThemeCss, locale, m.resumeDocumentTitle);
       }
     } finally {
       setExporting(null);
@@ -157,6 +208,7 @@ function EditorApp() {
   return (
     <div className={`editor-app mobile-${mobilePanel}`}>
       <style>{scopedCustomThemeCss(customThemes)}</style>
+      <RuntimeThemeStyle css={runtimeThemeCss} />
       <nav className="mobile-panel-tabs" aria-label={m.workspace}>
         <button className={mobilePanel === 'editor' ? 'active' : ''} onClick={() => setMobilePanel('editor')}><FileText size={15} />{m.editor}</button>
         <button className={mobilePanel === 'preview' ? 'active' : ''} onClick={() => setMobilePanel('preview')}><FileText size={15} />{m.preview}</button>
@@ -166,10 +218,24 @@ function EditorApp() {
       </nav>
       <main className="editor-layout">
         <section className="editor-column" data-testid="editor-column">
-          <PanelHeader label="MARKDOWN" tone="editor" />
-          <Suspense fallback={<div className="editor-loading">{m.loadingEditor}</div>}>
-            <MarkdownEditor value={state.markdown} onChange={(markdown) => setState((current) => ({ ...current, markdown }))} />
-          </Suspense>
+          <PanelHeader
+            label={(
+              <span className="editor-source-tabs" role="tablist" aria-label={m.editor}>
+                <button id="markdown-source-tab" role="tab" aria-selected={sourceTab === 'markdown'} aria-controls="source-editor-panel" className={sourceTab === 'markdown' ? 'active' : ''} onClick={() => setSourceTab('markdown')}>Markdown</button>
+                <button id="css-source-tab" role="tab" aria-selected={sourceTab === 'css'} aria-controls="source-editor-panel" className={sourceTab === 'css' ? 'active' : ''} onClick={() => setSourceTab('css')}>CSS</button>
+              </span>
+            )}
+            tone="editor"
+          >
+            {sourceTab === 'css' && <button className="reset-button css-reset-button" title={m.resetCss} aria-label={m.resetCss} disabled={!hasThemeCssDraft} onClick={resetThemeCss}><RotateCcw size={14} /></button>}
+          </PanelHeader>
+          <div id="source-editor-panel" className="source-editor-panel" role="tabpanel" aria-labelledby={`${sourceTab}-source-tab`}>
+            <Suspense fallback={<div className="editor-loading">{m.loadingEditor}</div>}>
+              {sourceTab === 'markdown'
+                ? <MarkdownEditor value={state.markdown} onChange={(markdown) => setState((current) => ({ ...current, markdown }))} />
+                : <CssEditor value={activeThemeCss} onChange={updateThemeCss} />}
+            </Suspense>
+          </div>
         </section>
         <section className="preview-column" data-testid="preview-column">
           <PanelHeader label={m.preview} tone="preview">
@@ -179,7 +245,7 @@ function EditorApp() {
               <span><Files size={13} />{pageCount}{m.pages}</span>
             </div>
           </PanelHeader>
-          <div className="preview-stage"><PaginatedResumePreview markdown={state.markdown} settings={state.settings} previewRef={previewRef} onPageCount={setPageCount} /></div>
+          <div className="preview-stage"><PaginatedResumePreview markdown={state.markdown} settings={state.settings} previewRef={previewRef} onPageCount={setPageCount} themeClassName={RUNTIME_THEME_CLASS} /></div>
         </section>
         <SettingsSidebar
           settings={state.settings}
