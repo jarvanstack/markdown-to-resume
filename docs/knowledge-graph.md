@@ -118,6 +118,7 @@ flowchart LR
     ThemeKey["markdown-resume-custom-themes-v1"] --> CustomTheme["CustomTheme list, max 10"]
     CustomTheme --> Settings
     CustomTheme --> ScopedCss["scoped CSS"]
+    Settings -->|"serialize import metadata and effective color variables"| ScopedCss
     BuiltInTheme["Built-in theme metadata and raw CSS"] --> Settings
     BuiltInTheme --> ScopedCss
     BuiltInTheme -->|"default document"| ActiveCss
@@ -163,7 +164,7 @@ sequenceDiagram
     A-->>S: Save per-theme CSS map after 120 ms debounce
 ```
 
-Selecting a template replaces Markdown. Selecting a built-in theme changes only the theme id while preserving current adjustments, including an explicit font choice; selecting a custom theme loads its saved `ResumeSettings`. A fresh GitHub state and “reset to theme defaults” select the `GitHub-System` option, whose stack matches GitHub's official system-font declaration, while the user can choose any other font afterward. The CSS editor resolves each selected theme to its saved full document or the built-in/custom source, supports restoring that source, and applies safely transformed CSS under a dedicated runtime class. Markdown raw HTML is parsed and sanitized before React creates resume DOM; GitHub-style `align` attributes retain only `left`, `center`, or `right`. Locale changes replace template Markdown only when the user has not edited the previous locale's template text.
+Selecting a template replaces Markdown. Selecting a built-in theme changes only the theme id while preserving current adjustments, including an explicit font choice; selecting a custom theme loads its saved `ResumeSettings`. A fresh GitHub state and “reset to theme defaults” select the `GitHub-System` option, whose stack matches GitHub's official system-font declaration, while the user can choose any other font afterward. The CSS editor resolves each selected theme to its saved full document or the built-in/custom source, supports restoring that source, and applies safely transformed CSS under a dedicated runtime class. Downloadable custom-theme CSS serializes colors twice from the same settings: stable `--resume-*-color` import metadata reconstructs `ResumeSettings`, while `--headerColor`, `--textColor`, `--linkColor`, `--accentColor`, `--accentColorMuted`, and `--mutedColor` make the scoped CSS independently effective and match the variables used by live preview. Markdown raw HTML is parsed and sanitized before React creates resume DOM; GitHub-style `align` attributes retain only `left`, `center`, or `right`. Locale changes replace template Markdown only when the user has not edited the previous locale's template text.
 
 Bundled Alibaba Sans, Source Han Sans SC, and Source Han Serif SC register separate real `400` and `700` faces. PingFang SC and Times New Roman use real platform Semibold/Bold faces without redistributing proprietary binaries, then fall back to the bundled Source Han Sans/Serif Bold face. The application shell disables font synthesis globally, while the `.resume-sheet.theme` boundary permits weight synthesis for other theme weights and assigns semantic `b`/`strong` content `700`. This shared rule loads after runtime theme CSS, so built-in themes and persisted drafts with weaker declarations use real Bold data in preview and export.
 
@@ -224,6 +225,17 @@ flowchart LR
 
 The catalog HTML files contain route-specific static metadata for crawlers; runtime SEO then synchronizes title, description, canonical URL, Open Graph, Twitter, and document language.
 
+### Non-Runtime Marketing Asset Flow
+
+```mermaid
+flowchart LR
+    WorkflowCopy["README Codex resume workflow and product claims"] --> Prompts["Three minimal ads-marketing prompt specifications"]
+    UserDirection["User direction: information-complete, no screenshot, gpt-image-2"] --> Prompts
+    Prompts -->|"OpenAI Image API, gpt-image-2, high quality, 1024 x 1536"| Covers["Three Xiaohongshu PNG covers"]
+```
+
+The generated covers are tracked campaign artifacts, not Vite inputs or public application assets. They contain no product screenshot or fabricated interface, do not import runtime modules, do not change the deployed bundle, and describe Codex plus markdown-to-resume as a workflow rather than an in-product integration.
+
 ## Node Catalog
 
 | Node | Path | Owns | Main consumers or dependencies |
@@ -241,7 +253,7 @@ The catalog HTML files contain route-specific static metadata for crawlers; runt
 | Template data | `src/data/templates.ts`, `src/data/templates.en.ts` | 18 aligned role templates per locale and quick-template ids | App, settings, catalogs, storage defaults |
 | Built-in theme data | `src/data/themes.ts` | 11 themes, defaults, names, raw scoped CSS, selectable font stacks including GitHub's official system stack | App, settings, catalogs, preview, storage |
 | State persistence | `src/lib/storage.ts` | v3 state storage key, defaults, parse fallback, missing-field merge | `EditorApp` |
-| Custom themes | `src/lib/customThemes.ts` | Theme storage, max-10 retention, CSS serialization/import/scoping | App and theme catalog |
+| Custom themes | `src/lib/customThemes.ts` | Theme storage, max-10 retention, CSS serialization/import/scoping, and import-metadata/runtime-color declaration mapping | App, theme catalog, resume theme CSS |
 | Theme CSS drafts | `src/lib/cssDraft.ts` | Per-theme full CSS storage, limits, PostCSS source/runtime/portable scoping, safe fallback | `EditorApp`, custom-theme saving, preview styling, HTML export |
 | Markdown HTML policy | `src/lib/markdownHtml.ts` | GitHub-style sanitizer schema derived from `rehype-sanitize`, with `align` restricted to `left`, `center`, or `right` | `ResumePreview`, raw HTML parser and sanitizer, unit tests |
 | Density model | `src/lib/density.ts` | Normalization and interpolated structural CSS variables | Preview, pagination, storage |
@@ -251,6 +263,7 @@ The catalog HTML files contain route-specific static metadata for crawlers; runt
 | Application styles | `src/styles.css` | Workspace, preview pages, sidebar, catalogs, responsive layout | Loaded by bootstrap |
 | Theme and shared resume styles | `src/themes/*.css` | Theme appearance, density rules, paired Regular/Bold font registration, platform Bold fallbacks, and scoped sanitized-HTML alignment | Theme data, preview, HTML export |
 | Font and public assets | `src/assets/fonts/*`, `public/*` | Export-safe Alibaba/Source Han Regular and real Bold assets, source/license notices, icon, robots, sitemap | Theme CSS maps `400/700` to separate files; proprietary PingFang/Times Bold stays platform-local and falls back to bundled open Bold; HTML export embeds the same declarations with official remote fallback |
+| Marketing assets | `marketing/xiaohongshu/*.png` | Three structured 1024 x 1536 Codex workflow covers generated directly with `gpt-image-2` | README workflow claims, user art direction, OpenAI Image API; excluded from the Vite application bundle |
 | HTML route entries | `index.html`, `templates/index.html`, `themes/index.html` | Initial document and crawlable route metadata | Vite multi-page build |
 | Build and test config | `vite.config.ts`, `tsconfig*.json`, `playwright.config.ts`, `package.json` | Compile, bundle, scripts, unit and browser-test setup | Local development and CI |
 | Deployment | `.github/workflows/deploy-pages.yml` | GitHub Pages build and publication | GitHub Actions, Vite base path |
@@ -267,7 +280,7 @@ The catalog HTML files contain route-specific static metadata for crawlers; runt
 4. The hidden measured resume and the visible clipped page copies render the same Markdown and settings. Pagination, smart fitting, preview count, and PDF cropping must agree on its geometry.
 5. CSS variables produced by `resumeStyle` and `densityStyleVariables` are the bridge from `ResumeSettings` to built-in/custom theme CSS.
 6. Built-in and imported theme selectors remain scoped to their theme class so resume CSS cannot style the application shell.
-7. Custom themes retain at most ten entries, newest updates win, and imported CSS metadata reconstructs a complete `ResumeSettings` object.
+7. Custom themes retain at most ten entries, newest updates win, and imported CSS metadata reconstructs a complete `ResumeSettings` object. Exported CSS must also declare all effective theme color variables consumed by theme rules so its colors do not depend on `ResumePreview` inline styles; metadata and runtime color declarations derive from the same settings.
 8. Chinese and English templates share stable ids so locale switches and template links refer to the same role.
 9. User-edited Markdown is not overwritten during a locale change; only an untouched current template is replaced by its localized counterpart.
 10. `/`, `/templates`, and `/themes` must work under both root development URLs and the configured deployment base path, while canonical SEO URLs use `https://resume.jarvans.com`.
@@ -288,7 +301,7 @@ The catalog HTML files contain route-specific static metadata for crawlers; runt
 | Markdown rendering or safe HTML policy | `MarkdownEditor.tsx`, `ResumePreview.tsx`, `markdownHtml.ts`, shared theme/global CSS, export | Markdown-HTML unit tests, E2E Markdown/GFM/sanitization/alignment coverage, and all export formats |
 | Pagination or paper size | `pagination.ts`, `ResumePreview.tsx`, `export.ts`, preview CSS, settings | E2E pagination, smart-fit, PDF tests |
 | Built-in theme or font | `themes.ts`, `src/themes/`, storage defaults, font assets/notices, custom-theme serialization | Theme selection/reset/download/import, fresh GitHub system-stack default, user font override preservation, font metadata/build assets, loaded real `700` FontFace, computed-family checks, normal-versus-bold glyph raster comparison, and visual/export checks |
-| Custom themes | `customThemes.ts`, App theme state, `CatalogPages.tsx`, `SettingsSidebar.tsx` | Theme save/reset/import/rename/delete E2E tests |
+| Custom themes | `customThemes.ts`, App theme state, `CatalogPages.tsx`, `SettingsSidebar.tsx`, preview/theme color variables | Theme serialization unit tests plus save/reset/download/import/independent-color-render/rename/delete E2E tests |
 | Live theme CSS editing | `cssDraft.ts`, source editors, `App.tsx`, `ResumePreview.tsx`, theme/density/global CSS, HTML export | CSS-draft unit tests plus E2E default source, theme switching, reset, scoping, persistence, preview, save-theme, and export checks |
 | Templates | Both locale data files, quick ids, catalogs, storage default/migration | Template/resource unit tests and locale/catalog E2E tests |
 | Locale or UI copy | `i18n.tsx`, both template sets, SEO if searchable, affected components | Locale persistence/switch E2E and resource parity unit tests |
@@ -296,6 +309,7 @@ The catalog HTML files contain route-specific static metadata for crawlers; runt
 | Export | `export.ts`, canonical preview DOM, pagination, theme/font/density CSS | PNG, PDF, HTML E2E tests |
 | Responsive layout | `styles.css`, workspace/catalog components | Desktop and mobile E2E assertions/screenshots |
 | Header actions or external repository links | `App.tsx`, `SettingsSidebar.tsx`, `CatalogPages.tsx`, shared action component, `styles.css` | E2E destination, security attributes, DOM order, and desktop/mobile/catalog visual checks |
+| Marketing campaign assets | `marketing/` generated files, final prompt set, related README claims, change plan and graph ledger | Model/size inspection, exact-text and simplicity review, prohibited-element review, visual inspection, and `git diff --check`; run application checks only when runtime sources also change |
 | Build or deployment | `package.json`, Vite/TS/Playwright config, workflow, three HTML inputs | `npm run check` and base-path build where relevant |
 | Policy or documentation only | `AGENT.md`, related plan, affected graph sections and ledger | Path/link review and `git diff --check` |
 
@@ -303,12 +317,13 @@ The catalog HTML files contain route-specific static metadata for crawlers; runt
 
 | Test suite | Protects |
 | --- | --- |
-| `src/lib/storage.test.ts` | Defaults, persisted-state validation/migration, template/theme completeness, locale detection/message parity |
+| `src/lib/storage.test.ts` | Defaults, persisted-state validation/migration, template/theme completeness, custom-theme metadata/runtime color serialization, locale detection/message parity |
 | `src/lib/cssDraft.test.ts` | Per-theme CSS map normalization/limits, built-in/custom/runtime/portable selector rewriting, nested-rule and keyframe handling, import removal, malformed-CSS fallback |
 | `src/lib/markdownHtml.test.tsx` | GitHub-style safe raw HTML, allowed alignment values, dangerous tag/attribute removal, and coexistence with GFM output |
 | `src/lib/seo.test.ts` | Route resolution and locale-specific runtime metadata |
-| `e2e/app.spec.ts` | Locale behavior, workspace and header actions, external-repository link placement/security, themes, templates, fresh/reset GitHub system font, user font override preservation, loaded real `700` faces and visible Markdown bold glyphs, Markdown/GFM, sanitized HTML alignment, persistence, preview pagination, smart fitting, three export formats, responsiveness, screenshots |
+| `e2e/app.spec.ts` | Locale behavior, workspace and header actions, external-repository link placement/security, themes, theme CSS independent/imported color fidelity, templates, fresh/reset GitHub system font, user font override preservation, loaded real `700` faces and visible Markdown bold glyphs, Markdown/GFM, sanitized HTML alignment, persistence, preview pagination, smart fitting, three export formats, responsiveness, screenshots |
 | `e2e/seo.spec.ts` | Independent crawlable HTML responses and runtime canonical/content for templates and themes |
+| Marketing cover generation verification | Fixed 1024 x 1536 dimensions, nonblank image output, exact headline/five steps/benefit copy, the GitHub repository link on cover one, the deployed project link on covers two and three, distinct restrained compositions, and absence of screenshots, interfaces, devices, or watermarks in `marketing/xiaohongshu/*.png` |
 | `npm run build` | TypeScript project references and all three Vite entry bundles |
 | `npm run check` | Unit tests, production build, and Chromium E2E suite in sequence |
 
@@ -327,4 +342,6 @@ Every change must append a row. “Graph update” names the relationships or se
 | 2026-07-12 | [`Add live CSS editor tab`](plan/2026-07-12-live-css-editor.md) | `EditorApp`, source editors, panel chrome, resume rendering, theme CSS drafts, density/application/export CSS, i18n, dependencies, unit/E2E tests | Added per-theme complete CSS ownership and persistence, PostCSS runtime/portable scoping, replacement-theme rendering and export edges, CSS edit/persist/preview flow, isolation/fallback invariants, and matching impact/test coverage. |
 | 2026-07-12 | [`Add Codex resume workflow to READMEs`](plan/2026-07-12-codex-resume-workflow-readme.md) | `README.md`, `README_EN.md` | Added the supplied Chinese Codex-to-Moli workflow with its approved heading emoji and a matching English translation. Reviewed the documentation node, application graph, runtime flows, ownership, invariants, impact map, and test map; no architecture or behavior relationships changed. |
 | 2026-07-12 | [`Add GitHub-style HTML alignment`](plan/2026-07-12-github-style-html-alignment.md) | Resume rendering, Markdown HTML policy, shared resume styles, HTML export, dependencies, unit/E2E tests | Added raw-HTML parsing and GitHub-style sanitization edges, value-restricted alignment ownership, safe edit/preview behavior, shared preview/export styling, the raw-HTML invariant, and matching impact/test coverage. |
+| 2026-07-12 | [`Create Xiaohongshu Codex resume workflow covers`](plan/2026-07-12-xiaohongshu-promo-covers.md) | `marketing/xiaohongshu/*.png`, marketing assets | Added an isolated non-runtime flow from the README workflow and information-complete art direction through the OpenAI Image API and `gpt-image-2` to three 1024 x 1536 PNG covers. Recorded generation verification for the headline, five steps, benefit line, and per-cover link policy; cover one points to `github.com/jarvanstack/markdown-to-resume`, while covers two and three retain the deployed project URL. Confirmed that the covers contain no product screenshots or interfaces and do not affect the Vite application, deployment graph, or runtime invariants. |
 | 2026-07-12 | [`Restore visible bold font weights`](plan/2026-07-12-restore-bold-font-weights.md) | Theme data and storage defaults, shared resume styles, Alibaba/Source Han Bold assets/notices, platform and GitHub system-font contracts, resume rendering, export, unit/E2E tests | Replaced false variable-range and synthetic semantic bold with real `400/700` faces, bundled redistributable Bold assets, retained proprietary platform faces with open fallback, added GitHub's exact system stack as the fresh/reset default while preserving user overrides, and protected loaded Bold faces plus font state behavior in tests. |
+| 2026-07-12 | [`Preserve font colors in exported theme CSS`](plan/2026-07-12-export-theme-font-colors.md) | Custom themes, resume/theme color-variable contract, unit/E2E tests | Connected serialized theme settings to the effective runtime color variables already consumed by theme CSS, strengthened the standalone theme-file color invariant, and added download, independent CSS rendering, re-import, and computed-color protection. |

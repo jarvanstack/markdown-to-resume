@@ -68,13 +68,29 @@ describe('中文简历数据', () => {
   });
 
   it('自定义主题 CSS 包含全部可调配置', () => {
-    const theme = createCustomTheme('我的主题', { ...defaultSettings, fontSize: 12, lineHeight: 0.8 }, themes[0].css, 'github', 1, 'custom-test');
+    const theme = createCustomTheme('我的主题', {
+      ...defaultSettings,
+      fontSize: 12,
+      lineHeight: 0.8,
+      headingColor: '#7a1234',
+      textColor: '#234567',
+      linkColor: '#008855',
+      accentColor: '#cc5500',
+      mutedColor: '#667788',
+    }, themes[0].css, 'github', 1, 'custom-test');
     expect(theme.css).toContain('.resume-theme');
     expect(theme.css).toContain('--resume-theme-name: "我的主题"');
     expect(theme.css).toContain('--resume-font-size: 12');
     expect(theme.css).toContain('--resume-line-height: 0.8');
     expect(theme.css).toContain('--resume-layout-density: 35');
-    expect(theme.css).toContain('--resume-heading-color: #1f2328');
+    expect(theme.css).toContain('--resume-heading-color: #7a1234');
+    expect(theme.css).toContain('--resume-text-color: #234567');
+    expect(theme.css).toContain('--headerColor: #7a1234');
+    expect(theme.css).toContain('--textColor: #234567');
+    expect(theme.css).toContain('--linkColor: #008855');
+    expect(theme.css).toContain('--accentColor: #cc5500');
+    expect(theme.css).toContain('--accentColorMuted: #cc5500b3');
+    expect(theme.css).toContain('--mutedColor: #667788');
     expect(theme.css).not.toContain('.theme.github');
   });
 

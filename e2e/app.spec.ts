@@ -301,24 +301,66 @@ test('保存的自定义主题优先显示并持久化设置', async ({ page }) 
   await expect(page.getByTestId('line-height')).toHaveValue('0.8');
 });
 
-test('主题 CSS 可以下载、重新导入并重命名', async ({ page }) => {
+test('主题 CSS 可以下载、重新导入并保留字体颜色', async ({ page }) => {
+  const colorInputs = page.locator('.color-section input[type="color"]');
+  await expect(colorInputs).toHaveCount(5);
+  await colorInputs.nth(0).fill('#7a1234');
+  await colorInputs.nth(1).fill('#234567');
+  await colorInputs.nth(2).fill('#008855');
+  await colorInputs.nth(3).fill('#cc5500');
+  await colorInputs.nth(4).fill('#667788');
+  page.once('dialog', (dialog) => dialog.accept('导出配色主题'));
+  await page.getByTestId('save-theme').click();
+
   await page.goto('/themes');
   const downloadPromise = page.waitForEvent('download');
-  await page.getByRole('button', { name: '下载 GitHub' }).click();
+  await page.getByRole('button', { name: '下载 导出配色主题' }).click();
   const download = await downloadPromise;
   const cssPath = await download.path();
   const css = fs.readFileSync(cssPath!, 'utf8');
   expect(css).toContain('.resume-theme');
   expect(css).toContain('--resume-font-size: 16');
-  expect(css).toContain('--resume-heading-color: #1f2328');
+  expect(css).toContain('--resume-heading-color: #7a1234');
+  expect(css).toContain('--headerColor: #7a1234');
+  expect(css).toContain('--textColor: #234567');
+  expect(css).toContain('--linkColor: #008855');
+  expect(css).toContain('--accentColor: #cc5500');
+  expect(css).toContain('--accentColorMuted: #cc5500b3');
+  expect(css).toContain('--mutedColor: #667788');
 
-  await page.locator('input[type="file"]').setInputFiles({ name: 'github-copy.css', mimeType: 'text/css', buffer: Buffer.from(css) });
+  await page.evaluate((themeCss) => {
+    const style = document.createElement('style');
+    style.textContent = themeCss;
+    document.head.appendChild(style);
+    const fixture = document.createElement('div');
+    fixture.className = 'resume-theme';
+    fixture.dataset.testid = 'exported-theme-fixture';
+    fixture.innerHTML = '<h1>标题</h1><p>正文 <a href="#">链接</a></p>';
+    document.body.appendChild(fixture);
+  }, css);
+  const fixture = page.getByTestId('exported-theme-fixture');
+  await expect(fixture.locator('h1')).toHaveCSS('color', 'rgb(122, 18, 52)');
+  await expect(fixture.locator('p')).toHaveCSS('color', 'rgb(35, 69, 103)');
+  await expect(fixture.locator('a')).toHaveCSS('color', 'rgb(0, 136, 85)');
+
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.getByRole('button', { name: '删除 导出配色主题' }).click();
+  await expect(page.locator('.theme-card')).toHaveCount(11);
+
+  await page.locator('input[type="file"]').setInputFiles({ name: 'color-theme.css', mimeType: 'text/css', buffer: Buffer.from(css) });
   await expect(page.locator('.theme-card')).toHaveCount(12);
-  await expect(page.locator('.theme-card').first().locator('.theme-card-info h2')).toHaveText('GitHub');
-  await expect(page.getByRole('status')).toContainText('已导入 GitHub');
+  await expect(page.locator('.theme-card').first().locator('.theme-card-info h2')).toHaveText('导出配色主题');
+  await expect(page.getByRole('status')).toContainText('已导入 导出配色主题');
+
+  await page.locator('.theme-card').first().getByRole('link', { name: '使用主题' }).click();
+  await expect(page.getByTestId('resume-page').locator('h1')).toHaveCSS('color', 'rgb(122, 18, 52)');
+  await expect(page.getByTestId('resume-page').locator('p').first()).toHaveCSS('color', 'rgb(35, 69, 103)');
+  await expect(page.getByTestId('resume-page').locator('a').first()).toHaveCSS('color', 'rgb(0, 136, 85)');
+
+  await page.goto('/themes');
 
   page.once('dialog', (dialog) => dialog.accept('导入后重命名'));
-  await page.getByRole('button', { name: '重命名 GitHub' }).click();
+  await page.getByRole('button', { name: '重命名 导出配色主题' }).click();
   await expect(page.locator('.theme-card').first().locator('.theme-card-info h2')).toHaveText('导入后重命名');
   await page.reload();
   await expect(page.locator('.theme-card').first().locator('.theme-card-info h2')).toHaveText('导入后重命名');
