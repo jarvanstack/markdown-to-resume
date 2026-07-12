@@ -179,6 +179,26 @@ test('中文界面复刻三栏编辑器结构', async ({ page }) => {
   expect(Math.abs(widths.editor - widths.preview)).toBeLessThan(2);
 });
 
+test('语言切换右侧提供 GitHub 仓库链接', async ({ page }) => {
+  const desktopLanguage = page.getByTestId('language-select');
+  const desktopGithub = page.locator('.sidebar-topbar .github-link');
+  await expect(desktopGithub).toHaveAttribute('href', 'https://github.com/jarvanstack/markdown-to-resume');
+  await expect(desktopGithub).toHaveAttribute('target', '_blank');
+  await expect(desktopGithub).toHaveAttribute('rel', 'noreferrer');
+  await expect(desktopGithub).toHaveAccessibleName('GitHub');
+  await expect(desktopLanguage.locator('xpath=../following-sibling::*[1]')).toHaveClass(/github-link/);
+
+  await page.setViewportSize({ width: 800, height: 900 });
+  const mobileLanguage = page.getByTestId('mobile-language-select');
+  const mobileGithub = page.locator('.mobile-panel-tabs .github-link');
+  await expect(mobileGithub).toBeVisible();
+  await expect(mobileLanguage.locator('xpath=../following-sibling::*[1]')).toHaveClass(/github-link/);
+
+  await page.goto('/templates');
+  const catalogLanguage = page.getByTestId('language-select');
+  await expect(catalogLanguage.locator('xpath=../following-sibling::*[1]')).toHaveClass(/github-link/);
+});
+
 test('首页仅展示 4 个快捷主题和 4 个快捷模板', async ({ page }) => {
   await expect(page.locator('.theme-buttons button')).toHaveCount(4);
   await expect(page.locator('.sidebar-section').filter({ hasText: '快速模板' }).locator('.quick-grid button')).toHaveCount(4);

@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Clock3, Files, FileText, Settings2 } from 'lucide-react';
 import { PanelHeader } from './components/PanelHeader';
+import { GitHubLink } from './components/GitHubLink';
 import { PaginatedResumePreview, resumeStyle } from './components/ResumePreview';
 import { SettingsSidebar } from './components/SettingsSidebar';
 import { TemplateCatalog, ThemeCatalog } from './components/CatalogPages';
@@ -161,6 +162,7 @@ function EditorApp() {
         <button className={mobilePanel === 'preview' ? 'active' : ''} onClick={() => setMobilePanel('preview')}><FileText size={15} />{m.preview}</button>
         <button className={mobilePanel === 'settings' ? 'active' : ''} onClick={() => setMobilePanel('settings')}><Settings2 size={15} />{m.settings}</button>
         <LanguageSelect className="mobile-language-select" testId="mobile-language-select" />
+        <GitHubLink className="mobile-github-link" />
       </nav>
       <main className="editor-layout">
         <section className="editor-column" data-testid="editor-column">

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { fontOptions, getTheme, quickThemeIds } from '../data/themes';
 import { getTemplate, quickTemplateIds } from '../data/templates';
 import { LanguageSelect, useI18n } from '../i18n';
+import { GitHubLink } from './GitHubLink';
 import type { CustomTheme, ExportFormat, ResumeSettings } from '../types';
 import type { FitToPageStatus } from '../lib/pagination';
 
@@ -49,7 +50,7 @@ export function SettingsSidebar({ settings, templateId, customThemes, exporting,
 
   return (
     <aside className="sidebar" data-testid="settings-sidebar">
-      <div className="sidebar-topbar"><LanguageSelect /></div>
+      <div className="sidebar-topbar"><LanguageSelect /><GitHubLink /></div>
       <div className="sidebar-export">
         <label className="export-format"><span>{m.exportFormat}</span><select aria-label={m.exportFormat} data-testid="export-format" value={exportFormat} onChange={(event) => setExportFormat(event.target.value as ExportFormat)}><option value="pdf">PDF</option><option value="png">{m.image}</option><option value="html">HTML</option></select></label>
         <button className="export-primary" data-testid="export-action" disabled={exporting !== null} onClick={() => onExport(exportFormat)}><Download size={17} />{exporting ? m.exporting : `${m.export} ${exportLabels[exportFormat]}`}</button>

@@ -3,6 +3,7 @@ import { Download, FileText, Palette, Pencil, Trash2, Upload } from 'lucide-reac
 import { getThemes } from '../data/themes';
 import { getTemplates } from '../data/templates';
 import { LanguageSelect, useI18n } from '../i18n';
+import { GitHubLink } from './GitHubLink';
 import { deleteCustomTheme, downloadThemeCss, loadCustomThemes, parseImportedTheme, renameCustomTheme, scopedCustomThemeCss, serializeThemeCss, upsertCustomTheme } from '../lib/customThemes';
 import type { CustomTheme } from '../types';
 import { ResumePreview } from './ResumePreview';
@@ -19,7 +20,7 @@ function CatalogHeader() {
       <div className="catalog-header-inner">
         <Logo />
         <nav aria-label={m.mainNavigation}><a href={`${import.meta.env.BASE_URL}templates`}>{m.templates}</a><a href={`${import.meta.env.BASE_URL}themes`}>{m.themes}</a><a href={import.meta.env.BASE_URL}>{m.editorNav}</a></nav>
-        <div className="catalog-header-actions"><LanguageSelect /><a className="open-editor" href={import.meta.env.BASE_URL}>{m.openEditor}</a></div>
+        <div className="catalog-header-actions"><LanguageSelect /><GitHubLink /><a className="open-editor" href={import.meta.env.BASE_URL}>{m.openEditor}</a></div>
       </div>
     </header>
   );
