@@ -1,9 +1,12 @@
 import { useEffect, useState, type CSSProperties, type RefObject } from 'react';
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
 import { calculatePageBreaks, continuationMargin, paperPoints } from '../lib/pagination';
 import { getFontStack } from '../data/themes';
 import { densityStyleVariables, normalizeLayoutDensity } from '../lib/density';
+import { githubMarkdownHtmlSchema } from '../lib/markdownHtml';
 import type { ResumeSettings } from '../types';
 
 export function resumeStyle(settings: ResumeSettings): CSSProperties {
@@ -52,6 +55,7 @@ export function ResumePreview({ markdown, settings, previewRef, compact = false,
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeRaw, [rehypeSanitize, githubMarkdownHtmlSchema]]}
         components={{
           a: ({ children, ...props }) => <a {...props} target="_blank" rel="noreferrer">{children}</a>,
           input: ({ className, type, ...props }) => <input {...props} type={type} className={[className, type === 'checkbox' ? 'task-list-item-checkbox' : ''].filter(Boolean).join(' ') || undefined} />,

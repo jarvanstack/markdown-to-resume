@@ -2,11 +2,11 @@
 
 ## Metadata
 
-- Status: In Progress
+- Status: Completed
 - Date: 2026-07-12
 - Owner: Codex
 - Request: Support GitHub-compatible HTML in Markdown so resume authors can control left, center, and right text alignment.
-- Related files: `package.json`, `package-lock.json`, `src/components/ResumePreview.tsx`, `src/lib/markdownHtml.ts`, `src/lib/markdownHtml.test.ts`, `src/lib/export.ts`, `src/styles.css`, `src/themes/markdown-html.css`, `e2e/app.spec.ts`, `docs/knowledge-graph.md`
+- Related files: `package.json`, `package-lock.json`, `src/components/ResumePreview.tsx`, `src/lib/markdownHtml.ts`, `src/lib/markdownHtml.test.tsx`, `src/lib/export.ts`, `src/styles.css`, `src/themes/markdown-html.css`, `e2e/app.spec.ts`, `docs/knowledge-graph.md`
 
 ## Background And Evidence
 
@@ -14,7 +14,7 @@ The editor accepts Markdown through CodeMirror, while `ResumePreview` currently 
 
 GitHub Flavored Markdown recognizes raw HTML but GitHub sanitizes the rendered result rather than trusting arbitrary tags and attributes. GitHub README content commonly uses legacy `align` attributes such as `<p align="right">...</p>` and `<div align="center">...</div>`, while arbitrary scripts, event handlers, iframes, and inline styling are not allowed to control the host page. The requested behavior is therefore a GitHub-style safe subset, not unrestricted browser HTML execution.
 
-`react-markdown` supports this architecture through `rehype-raw`, which reparses Markdown HTML nodes into the HAST tree, followed by `rehype-sanitize`, whose default schema is based on GitHub's sanitization model. The project needs a small schema extension for the GitHub-compatible `align` attribute and a shared style contract that is present both in the application and standalone HTML export.
+`react-markdown` supports this architecture through `rehype-raw`, which reparses Markdown HTML nodes into the HAST tree, followed by `rehype-sanitize`, whose default schema is based on GitHub's sanitization model. That default schema permits `align` broadly, so the project derives its policy from the default while narrowing that property to the requested `left`, `center`, and `right` values. A shared style contract must be present both in the application and standalone HTML export.
 
 ## Goals
 
@@ -49,7 +49,7 @@ New edges connect `ResumePreview` to the raw-HTML parser, sanitizer policy, and 
 ## Implementation Plan
 
 1. Add compatible `rehype-raw` and `rehype-sanitize` runtime dependencies.
-2. Create a Markdown HTML policy module by extending `rehype-sanitize`'s GitHub-style default schema only where necessary for `align` on paragraph and division elements, with allowed values restricted to `left`, `center`, and `right`.
+2. Create a Markdown HTML policy module from `rehype-sanitize`'s GitHub-style default schema, replacing its broad global `align` property definition with values restricted to `left`, `center`, and `right`.
 3. Add raw parsing followed by sanitization to the existing `ReactMarkdown` pipeline. Keep custom link and task-list renderers intact.
 4. Add shared, resume-scoped CSS selectors for the three allowed alignment values. Use explicit CSS rather than relying only on obsolete browser presentation behavior so preview and exported HTML remain deterministic.
 5. Import the shared CSS into the application and embed its raw source into standalone HTML export alongside density and font CSS.
@@ -63,7 +63,7 @@ New edges connect `ResumePreview` to the raw-HTML parser, sanitizer policy, and 
 Automated verification:
 
 ```bash
-npm run test -- src/lib/markdownHtml.test.ts
+npm run test -- src/lib/markdownHtml.test.tsx
 npm run check
 git diff --check
 ```
@@ -95,19 +95,30 @@ Behavioral checks:
 - Decision: Use GitHub's familiar `align` syntax rather than inventing a custom Markdown directive.
 - Decision: Restrict alignment to `left`, `center`, and `right`; `justify`, arbitrary classes, and inline CSS are outside the requested layout control.
 - Decision: Keep alignment in Markdown rather than `ResumeSettings`, because it is local to individual content blocks and should survive template/export round trips without a cross-cutting settings migration.
-- Deviation: None at implementation start.
+- Decision: Preserve `remark-gfm` table alignment, which is generated as safe React style properties after sanitization, while continuing to remove user-authored raw `style` attributes.
+- Deviation: Inspection of the installed GitHub-style default schema showed that `align` was already globally allowed without value restrictions. The implementation replaces that broad definition instead of adding a new per-element property, preserving GitHub syntax while enforcing the agreed three-value boundary.
 
 ## Completion Checklist
 
 - [x] Current renderer, canonical measurement DOM, exports, tests, GitHub reference behavior, and knowledge graph inspected.
 - [x] Detailed plan created before implementation.
-- [ ] Runtime dependencies and sanitizer policy added.
-- [ ] Raw HTML rendering and shared alignment styling implemented.
-- [ ] Focused unit and E2E coverage added.
-- [ ] Full automated and rendered verification passed.
-- [ ] Knowledge graph synchronized and ledger appended.
-- [ ] Final diff reviewed and final result recorded.
+- [x] Runtime dependencies and sanitizer policy added.
+- [x] Raw HTML rendering and shared alignment styling implemented.
+- [x] Focused unit and E2E coverage added.
+- [x] Full automated and rendered verification passed.
+- [x] Knowledge graph synchronized and ledger appended.
+- [x] Final diff reviewed and final result recorded.
 
 ## Final Result
 
-In progress.
+Added GitHub-style raw HTML support to the existing React Markdown pipeline through `rehype-raw`, followed immediately by `rehype-sanitize`. The sanitizer policy derives from its GitHub-style default schema but narrows `align` to `left`, `center`, or `right`. Safe tags such as `<p>` and `<div>` now render as resume DOM, while user-authored inline styles, event handlers, scripts, iframes, and unsupported alignment values are removed.
+
+Added resume-scoped alignment CSS shared by the live application and standalone HTML export. Because the hidden measured resume and all visible page copies use the same `ResumePreview`, alignment participates in canonical measurement, pagination, smart fitting, and PDF/PNG capture without changing `ResumeSettings` or persisted-state v3.
+
+Verification completed on 2026-07-12:
+
+- `npm run test -- src/lib/markdownHtml.test.tsx` passed 5 focused tests covering allowed values, unsafe HTML removal, and GFM coexistence.
+- The focused Playwright HTML-alignment test passed across all 11 built-in themes and verified sanitized standalone HTML export.
+- `npm run check` passed: 4 unit-test files with 28 tests, the TypeScript/Vite production build, and 25 Chromium E2E tests including GFM style parity, pagination, smart fitting, live CSS editing, and PDF/PNG/HTML export.
+- A local browser check at desktop width confirmed visibly distinct left, center, and right placement with no overlap; an unsafe style/event example rendered as ordinary sanitized text.
+- `git diff --check` passed, and the final source/documentation diff was reconciled with the knowledge graph and this plan.

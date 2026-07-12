@@ -427,6 +427,66 @@ test('CodeMirror 可以编辑并实时更新中文预览', async ({ page }) => {
   await expect(page.getByTestId('resume-page')).toContainText('实时预览正常');
 });
 
+test('GitHub 风格 HTML 支持安全的文字对齐并过滤危险内容', async ({ page }) => {
+  const markdown = `# HTML 对齐测试
+
+<p align="left">左对齐内容</p>
+<p align="center">居中内容</p>
+<p align="right">右对齐内容</p>
+<div align="right"><strong>块级右对齐</strong></div>
+
+<p align="justify" style="position:fixed" onclick="alert(1)">危险属性内容</p>
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" onerror="alert(1)">
+<script>window.markdownHtmlExecuted = true</script>
+<iframe src="https://example.com">危险框架</iframe>`;
+  await replaceMarkdown(page, markdown);
+
+  const resume = page.getByTestId('resume-page');
+  const left = resume.getByText('左对齐内容', { exact: true });
+  const center = resume.getByText('居中内容', { exact: true });
+  const right = resume.getByText('右对齐内容', { exact: true });
+  const rightBlock = resume.getByText('块级右对齐', { exact: true });
+  await expect(left).toHaveAttribute('align', 'left');
+  await expect(center).toHaveAttribute('align', 'center');
+  await expect(right).toHaveAttribute('align', 'right');
+  await expect.poll(() => left.evaluate((element) => getComputedStyle(element).textAlign)).toBe('left');
+  await expect.poll(() => center.evaluate((element) => getComputedStyle(element).textAlign)).toBe('center');
+  await expect.poll(() => right.evaluate((element) => getComputedStyle(element).textAlign)).toBe('right');
+  await expect.poll(() => rightBlock.evaluate((element) => getComputedStyle(element.parentElement!).textAlign)).toBe('right');
+
+  const unsafe = resume.getByText('危险属性内容', { exact: true });
+  await expect(unsafe).not.toHaveAttribute('align');
+  await expect(unsafe).not.toHaveAttribute('style');
+  await expect(unsafe).not.toHaveAttribute('onclick');
+  await expect(resume.locator('img')).not.toHaveAttribute('onerror');
+  await expect(resume.locator('script')).toHaveCount(0);
+  await expect(resume.locator('iframe')).toHaveCount(0);
+  expect(await page.evaluate(() => (window as Window & { markdownHtmlExecuted?: boolean }).markdownHtmlExecuted)).toBeUndefined();
+
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('markdown-resume-state-v3'))).toContain('右对齐内容');
+  const themeIds = ['github', 'crisp', 'vivid', 'airy', 'stark', 'calm', 'dusk', 'sharp', 'warm', 'stern', 'fresh'];
+  for (const themeId of themeIds) {
+    await page.goto(`/?theme=${themeId}`);
+    await expect.poll(() => page.getByTestId('resume-page').getByText('右对齐内容', { exact: true }).evaluate((element) => getComputedStyle(element).textAlign)).toBe('right');
+  }
+
+  await page.getByTestId('export-format').selectOption('html');
+  const htmlPromise = page.waitForEvent('download');
+  await page.getByTestId('export-action').click();
+  const htmlPath = await (await htmlPromise).path();
+  const html = fs.readFileSync(htmlPath!, 'utf8');
+  expect(html).toContain('<p align="right">右对齐内容</p>');
+  expect(html).toContain('.resume-sheet [align="right"]');
+  expect(html).not.toContain('position:fixed');
+  expect(html).not.toContain('onclick=');
+  expect(html).not.toContain('onerror=');
+  expect(html).not.toContain('<script>');
+  expect(html).not.toContain('<iframe');
+
+  await page.setContent(html);
+  await expect.poll(() => page.locator('p[align="right"]').evaluate((element) => getComputedStyle(element).textAlign)).toBe('right');
+});
+
 test('GitHub 主题计算样式与 github-markdown-css 5.9.0 一致', async ({ page, context }) => {
   await replaceMarkdown(page, githubMarkdownFixture);
   const resume = page.getByTestId('resume-page');

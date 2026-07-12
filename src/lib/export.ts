@@ -4,6 +4,7 @@ import type { Locale, PaperSize } from '../types';
 import { calculatePageBreaks, continuationMargin, paperPoints } from './pagination';
 import densityCss from '../themes/density.css?raw';
 import fontCss from '../themes/fonts.css?raw';
+import markdownHtmlCss from '../themes/markdown-html.css?raw';
 
 async function renderResume(element: HTMLElement) {
   await document.fonts.ready;
@@ -60,6 +61,7 @@ export function exportHtml(element: HTMLElement, themeCss: string, locale: Local
     .resume-sheet:not([data-theme-id="github"]), .resume-sheet:not([data-theme-id="github"]) a { overflow-wrap: anywhere; }
     ${densityCss}
     ${fontCss}
+    ${markdownHtmlCss}
     @media print { .resume-sheet { max-width: none; } }
   </style>
 </head>

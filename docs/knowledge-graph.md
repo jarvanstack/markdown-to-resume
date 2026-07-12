@@ -53,9 +53,14 @@ flowchart TD
     Editor --> CodeMirror["CodeMirror 6 Markdown and CSS languages"]
     CssDrafts --> PostCss["PostCSS parser"]
     Preview --> ReactMarkdown["react-markdown and remark-gfm"]
+    Preview --> MarkdownHtml["src/lib/markdownHtml.ts"]
+    ReactMarkdown --> RehypeRaw["rehype-raw"]
+    ReactMarkdown --> RehypeSanitize["rehype-sanitize"]
+    MarkdownHtml --> RehypeSanitize
     Preview --> Themes
     Preview --> Density["src/lib/density.ts"]
     Preview --> Pagination
+    AppCss --> MarkdownHtmlCss["src/themes/markdown-html.css"]
     Settings --> Templates
     Settings --> Themes
     Settings --> I18n
@@ -80,6 +85,7 @@ flowchart TD
     Export --> HtmlToImage["html-to-image"]
     Export --> JsPdf["jsPDF"]
     Export --> ThemeCss["theme density and font CSS"]
+    Export --> MarkdownHtmlCss
     Themes --> ThemeCss
     ThemeCss --> FontAssets["src/assets/fonts/*"]
 ```
@@ -138,12 +144,15 @@ sequenceDiagram
     participant C as CSS draft and PostCSS
     participant P as PaginatedResumePreview
     participant R as ReactMarkdown
+    participant H as Raw HTML parser and sanitizer
     participant S as localStorage
 
     U->>E: Edit Markdown
     E->>A: onChange(markdown)
     A->>P: markdown plus ResumeSettings
-    P->>R: Render GFM into hidden measurable DOM and page copies
+    P->>R: Render GFM and raw HTML
+    R->>H: Parse HTML then apply GitHub-style sanitizer policy
+    H-->>P: Safe DOM with value-restricted align attributes
     P->>P: ResizeObserver recalculates page breaks
     P->>A: Report page count
     A-->>S: Save PersistedState after 120 ms debounce
@@ -154,7 +163,7 @@ sequenceDiagram
     A-->>S: Save per-theme CSS map after 120 ms debounce
 ```
 
-Selecting a template replaces Markdown. Selecting a built-in theme changes only the theme id while preserving current adjustments; selecting a custom theme loads its saved `ResumeSettings`. The CSS editor resolves each selected theme to its saved full document or the built-in/custom source, supports restoring that source, and applies safely transformed CSS under a dedicated runtime class. Locale changes replace template Markdown only when the user has not edited the previous locale's template text.
+Selecting a template replaces Markdown. Selecting a built-in theme changes only the theme id while preserving current adjustments; selecting a custom theme loads its saved `ResumeSettings`. The CSS editor resolves each selected theme to its saved full document or the built-in/custom source, supports restoring that source, and applies safely transformed CSS under a dedicated runtime class. Markdown raw HTML is parsed and sanitized before React creates resume DOM; GitHub-style `align` attributes retain only `left`, `center`, or `right`. Locale changes replace template Markdown only when the user has not edited the previous locale's template text.
 
 ### Pagination And Smart One-Page
 
@@ -186,7 +195,7 @@ flowchart TD
     Canonical --> HTML["Cloned resume HTML"]
     Theme["Active edited runtime theme CSS"] --> HTML
     Theme --> Canonical
-    Shared["Density and bundled font CSS"] --> HTML
+    Shared["Density, bundled font, and sanitized-HTML alignment CSS"] --> HTML
     HTML --> HtmlDownload["Standalone HTML download"]
 ```
 
@@ -232,12 +241,13 @@ The catalog HTML files contain route-specific static metadata for crawlers; runt
 | State persistence | `src/lib/storage.ts` | v3 state storage key, defaults, parse fallback, missing-field merge | `EditorApp` |
 | Custom themes | `src/lib/customThemes.ts` | Theme storage, max-10 retention, CSS serialization/import/scoping | App and theme catalog |
 | Theme CSS drafts | `src/lib/cssDraft.ts` | Per-theme full CSS storage, limits, PostCSS source/runtime/portable scoping, safe fallback | `EditorApp`, custom-theme saving, preview styling, HTML export |
+| Markdown HTML policy | `src/lib/markdownHtml.ts` | GitHub-style sanitizer schema derived from `rehype-sanitize`, with `align` restricted to `left`, `center`, or `right` | `ResumePreview`, raw HTML parser and sanitizer, unit tests |
 | Density model | `src/lib/density.ts` | Normalization and interpolated structural CSS variables | Preview, pagination, storage |
 | Pagination and fitting | `src/lib/pagination.ts` | Paper geometry, measurement, breaks, readable fit stages | Preview and export; commanded by App |
 | Export | `src/lib/export.ts` | Browser-side PNG, PDF, and standalone HTML downloads | Lazy-loaded by App |
 | SEO | `src/lib/seo.ts` | `resume.jarvans.com` canonical origin, locale/route metadata, and DOM application | LocaleProvider, route HTML, SEO tests |
 | Application styles | `src/styles.css` | Workspace, preview pages, sidebar, catalogs, responsive layout | Loaded by bootstrap |
-| Theme styles | `src/themes/*.css` | Theme appearance, density rules, bundled font faces | Theme data, preview, HTML export |
+| Theme and shared resume styles | `src/themes/*.css` | Theme appearance, density rules, bundled font faces, and scoped sanitized-HTML alignment | Theme data, preview, HTML export |
 | Font and public assets | `src/assets/fonts/*`, `public/*` | Export-safe fonts, icon, robots, sitemap | Theme CSS, HTML entries, deployment |
 | HTML route entries | `index.html`, `templates/index.html`, `themes/index.html` | Initial document and crawlable route metadata | Vite multi-page build |
 | Build and test config | `vite.config.ts`, `tsconfig*.json`, `playwright.config.ts`, `package.json` | Compile, bundle, scripts, unit and browser-test setup | Local development and CI |
@@ -264,13 +274,14 @@ The catalog HTML files contain route-specific static metadata for crawlers; runt
 13. Every application header variant that exposes the language selector renders the shared GitHub repository link immediately after it; the external destination opens in a separate, non-opener browser context.
 14. Every built-in or custom theme supplies the CSS editor's default complete document; saved edits are isolated by theme id and never modify checked-in theme files or stored custom-theme records in place.
 15. Editor preview resumes use `.theme.css-editor-theme` plus the original `data-theme-id`; only PostCSS-transformed CSS is injected, `@import` is removed, shell selectors are nested under the runtime theme, and malformed edits fall back to the original theme CSS.
+16. Raw HTML in Markdown is reparsed before rendering and always passes through the GitHub-style sanitizer schema; user-authored inline styles, event handlers, scripts, and unsupported elements are removed, while `align` retains only `left`, `center`, or `right` and uses the same scoped CSS in live preview and standalone HTML export.
 
 ## Change Impact Map
 
 | Change area | Inspect and usually update together | Minimum focused verification |
 | --- | --- | --- |
 | `ResumeSettings` or defaults | `types.ts`, `themes.ts`, `storage.ts`, `customThemes.ts`, `ResumePreview.tsx`, `pagination.ts`, `SettingsSidebar.tsx`, export CSS | Storage unit tests plus relevant E2E settings, fit, and export tests |
-| Markdown rendering | `MarkdownEditor.tsx`, `ResumePreview.tsx`, theme/global CSS, export | E2E Markdown coverage and all export formats |
+| Markdown rendering or safe HTML policy | `MarkdownEditor.tsx`, `ResumePreview.tsx`, `markdownHtml.ts`, shared theme/global CSS, export | Markdown-HTML unit tests, E2E Markdown/GFM/sanitization/alignment coverage, and all export formats |
 | Pagination or paper size | `pagination.ts`, `ResumePreview.tsx`, `export.ts`, preview CSS, settings | E2E pagination, smart-fit, PDF tests |
 | Built-in theme or font | `themes.ts`, `src/themes/`, font assets, custom-theme serialization | Theme selection/reset/download/import and visual/export checks |
 | Custom themes | `customThemes.ts`, App theme state, `CatalogPages.tsx`, `SettingsSidebar.tsx` | Theme save/reset/import/rename/delete E2E tests |
@@ -290,8 +301,9 @@ The catalog HTML files contain route-specific static metadata for crawlers; runt
 | --- | --- |
 | `src/lib/storage.test.ts` | Defaults, persisted-state validation/migration, template/theme completeness, locale detection/message parity |
 | `src/lib/cssDraft.test.ts` | Per-theme CSS map normalization/limits, built-in/custom/runtime/portable selector rewriting, nested-rule and keyframe handling, import removal, malformed-CSS fallback |
+| `src/lib/markdownHtml.test.tsx` | GitHub-style safe raw HTML, allowed alignment values, dangerous tag/attribute removal, and coexistence with GFM output |
 | `src/lib/seo.test.ts` | Route resolution and locale-specific runtime metadata |
-| `e2e/app.spec.ts` | Locale behavior, workspace and header actions, external-repository link placement/security, themes, templates, fonts, Markdown/GFM, persistence, preview pagination, smart fitting, three export formats, responsiveness, screenshots |
+| `e2e/app.spec.ts` | Locale behavior, workspace and header actions, external-repository link placement/security, themes, templates, fonts, Markdown/GFM, sanitized HTML alignment, persistence, preview pagination, smart fitting, three export formats, responsiveness, screenshots |
 | `e2e/seo.spec.ts` | Independent crawlable HTML responses and runtime canonical/content for templates and themes |
 | `npm run build` | TypeScript project references and all three Vite entry bundles |
 | `npm run check` | Unit tests, production build, and Chromium E2E suite in sequence |
@@ -310,3 +322,4 @@ Every change must append a row. “Graph update” names the relationships or se
 | 2026-07-11 | [`Add GitHub repository link to header actions`](plan/2026-07-11-github-repository-link.md) | `GitHubLink`, `EditorApp`, `SettingsSidebar`, `CatalogPages`, application styles, E2E tests | Connected all language-bearing header variants to the source repository through the shared adjacent link, recorded its new-tab security invariant, and expanded header-action impact and test coverage. |
 | 2026-07-12 | [`Add live CSS editor tab`](plan/2026-07-12-live-css-editor.md) | `EditorApp`, source editors, panel chrome, resume rendering, theme CSS drafts, density/application/export CSS, i18n, dependencies, unit/E2E tests | Added per-theme complete CSS ownership and persistence, PostCSS runtime/portable scoping, replacement-theme rendering and export edges, CSS edit/persist/preview flow, isolation/fallback invariants, and matching impact/test coverage. |
 | 2026-07-12 | [`Add Codex resume workflow to READMEs`](plan/2026-07-12-codex-resume-workflow-readme.md) | `README.md`, `README_EN.md` | Added the supplied Chinese Codex-to-Moli workflow with its approved heading emoji and a matching English translation. Reviewed the documentation node, application graph, runtime flows, ownership, invariants, impact map, and test map; no architecture or behavior relationships changed. |
+| 2026-07-12 | [`Add GitHub-style HTML alignment`](plan/2026-07-12-github-style-html-alignment.md) | Resume rendering, Markdown HTML policy, shared resume styles, HTML export, dependencies, unit/E2E tests | Added raw-HTML parsing and GitHub-style sanitization edges, value-restricted alignment ownership, safe edit/preview behavior, shared preview/export styling, the raw-HTML invariant, and matching impact/test coverage. |

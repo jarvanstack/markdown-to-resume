@@ -2,6 +2,7 @@
 @import './themes/index.css';
 @import './themes/density.css';
 @import './themes/fonts.css';
+@import './themes/markdown-html.css';
 
 :root {
   --app-bg: #f4f7f6;
