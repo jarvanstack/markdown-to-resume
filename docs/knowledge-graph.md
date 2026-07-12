@@ -87,7 +87,7 @@ flowchart TD
     Export --> ThemeCss["theme density and font CSS"]
     Export --> MarkdownHtmlCss
     Themes --> ThemeCss
-    ThemeCss --> FontAssets["src/assets/fonts/*"]
+    ThemeCss --> FontAssets["src/assets/fonts/* Regular/Bold assets and notices"]
 ```
 
 Dashed edges are runtime lazy loads. Component node labels map to files in `src/components/`.
@@ -163,7 +163,9 @@ sequenceDiagram
     A-->>S: Save per-theme CSS map after 120 ms debounce
 ```
 
-Selecting a template replaces Markdown. Selecting a built-in theme changes only the theme id while preserving current adjustments; selecting a custom theme loads its saved `ResumeSettings`. The CSS editor resolves each selected theme to its saved full document or the built-in/custom source, supports restoring that source, and applies safely transformed CSS under a dedicated runtime class. Markdown raw HTML is parsed and sanitized before React creates resume DOM; GitHub-style `align` attributes retain only `left`, `center`, or `right`. Locale changes replace template Markdown only when the user has not edited the previous locale's template text.
+Selecting a template replaces Markdown. Selecting a built-in theme changes only the theme id while preserving current adjustments, including an explicit font choice; selecting a custom theme loads its saved `ResumeSettings`. A fresh GitHub state and “reset to theme defaults” select the `GitHub-System` option, whose stack matches GitHub's official system-font declaration, while the user can choose any other font afterward. The CSS editor resolves each selected theme to its saved full document or the built-in/custom source, supports restoring that source, and applies safely transformed CSS under a dedicated runtime class. Markdown raw HTML is parsed and sanitized before React creates resume DOM; GitHub-style `align` attributes retain only `left`, `center`, or `right`. Locale changes replace template Markdown only when the user has not edited the previous locale's template text.
+
+Bundled Alibaba Sans, Source Han Sans SC, and Source Han Serif SC register separate real `400` and `700` faces. PingFang SC and Times New Roman use real platform Semibold/Bold faces without redistributing proprietary binaries, then fall back to the bundled Source Han Sans/Serif Bold face. The application shell disables font synthesis globally, while the `.resume-sheet.theme` boundary permits weight synthesis for other theme weights and assigns semantic `b`/`strong` content `700`. This shared rule loads after runtime theme CSS, so built-in themes and persisted drafts with weaker declarations use real Bold data in preview and export.
 
 ### Pagination And Smart One-Page
 
@@ -195,7 +197,7 @@ flowchart TD
     Canonical --> HTML["Cloned resume HTML"]
     Theme["Active edited runtime theme CSS"] --> HTML
     Theme --> Canonical
-    Shared["Density, bundled font, and sanitized-HTML alignment CSS"] --> HTML
+    Shared["Density, bundled Regular/Bold font, and sanitized-HTML alignment CSS"] --> HTML
     HTML --> HtmlDownload["Standalone HTML download"]
 ```
 
@@ -237,7 +239,7 @@ The catalog HTML files contain route-specific static metadata for crawlers; runt
 | GitHub repository link | `src/components/GitHubLink.tsx` | Shared accessible source-repository control and `github.com/jarvanstack/markdown-to-resume` destination | Editor mobile header, settings desktop header, catalog headers, Lucide icon |
 | Panel chrome | `src/components/PanelHeader.tsx` | Editor/preview headings | `EditorApp`, icon asset |
 | Template data | `src/data/templates.ts`, `src/data/templates.en.ts` | 18 aligned role templates per locale and quick-template ids | App, settings, catalogs, storage defaults |
-| Built-in theme data | `src/data/themes.ts` | 11 themes, defaults, names, raw scoped CSS, font stacks | App, settings, catalogs, preview, storage |
+| Built-in theme data | `src/data/themes.ts` | 11 themes, defaults, names, raw scoped CSS, selectable font stacks including GitHub's official system stack | App, settings, catalogs, preview, storage |
 | State persistence | `src/lib/storage.ts` | v3 state storage key, defaults, parse fallback, missing-field merge | `EditorApp` |
 | Custom themes | `src/lib/customThemes.ts` | Theme storage, max-10 retention, CSS serialization/import/scoping | App and theme catalog |
 | Theme CSS drafts | `src/lib/cssDraft.ts` | Per-theme full CSS storage, limits, PostCSS source/runtime/portable scoping, safe fallback | `EditorApp`, custom-theme saving, preview styling, HTML export |
@@ -247,8 +249,8 @@ The catalog HTML files contain route-specific static metadata for crawlers; runt
 | Export | `src/lib/export.ts` | Browser-side PNG, PDF, and standalone HTML downloads | Lazy-loaded by App |
 | SEO | `src/lib/seo.ts` | `resume.jarvans.com` canonical origin, locale/route metadata, and DOM application | LocaleProvider, route HTML, SEO tests |
 | Application styles | `src/styles.css` | Workspace, preview pages, sidebar, catalogs, responsive layout | Loaded by bootstrap |
-| Theme and shared resume styles | `src/themes/*.css` | Theme appearance, density rules, bundled font faces, and scoped sanitized-HTML alignment | Theme data, preview, HTML export |
-| Font and public assets | `src/assets/fonts/*`, `public/*` | Export-safe fonts, icon, robots, sitemap | Theme CSS, HTML entries, deployment |
+| Theme and shared resume styles | `src/themes/*.css` | Theme appearance, density rules, paired Regular/Bold font registration, platform Bold fallbacks, and scoped sanitized-HTML alignment | Theme data, preview, HTML export |
+| Font and public assets | `src/assets/fonts/*`, `public/*` | Export-safe Alibaba/Source Han Regular and real Bold assets, source/license notices, icon, robots, sitemap | Theme CSS maps `400/700` to separate files; proprietary PingFang/Times Bold stays platform-local and falls back to bundled open Bold; HTML export embeds the same declarations with official remote fallback |
 | HTML route entries | `index.html`, `templates/index.html`, `themes/index.html` | Initial document and crawlable route metadata | Vite multi-page build |
 | Build and test config | `vite.config.ts`, `tsconfig*.json`, `playwright.config.ts`, `package.json` | Compile, bundle, scripts, unit and browser-test setup | Local development and CI |
 | Deployment | `.github/workflows/deploy-pages.yml` | GitHub Pages build and publication | GitHub Actions, Vite base path |
@@ -275,6 +277,8 @@ The catalog HTML files contain route-specific static metadata for crawlers; runt
 14. Every built-in or custom theme supplies the CSS editor's default complete document; saved edits are isolated by theme id and never modify checked-in theme files or stored custom-theme records in place.
 15. Editor preview resumes use `.theme.css-editor-theme` plus the original `data-theme-id`; only PostCSS-transformed CSS is injected, `@import` is removed, shell selectors are nested under the runtime theme, and malformed edits fall back to the original theme CSS.
 16. Raw HTML in Markdown is reparsed before rendering and always passes through the GitHub-style sanitizer schema; user-authored inline styles, event handlers, scripts, and unsupported elements are removed, while `align` retains only `left`, `center`, or `right` and uses the same scoped CSS in live preview and standalone HTML export.
+17. Resume font families must register distinct real `400` and `700` faces; semantic `b`/`strong` content resolves to `700` and must load a matching FontFace rather than synthesize from Regular. Redistributable Alibaba/Source Han Bold is bundled, while proprietary PingFang SC and Times New Roman are referenced only through platform `local(...)` and use bundled open Bold fallbacks. Preview, PNG/PDF capture, and standalone HTML share this contract.
+18. `GitHub-System` maps exactly to GitHub's published system-font stack and is the font for fresh/reset GitHub settings. A stored or newly selected `fontFamily` remains user-owned and survives built-in theme switches; selecting GitHub does not silently replace it.
 
 ## Change Impact Map
 
@@ -283,7 +287,7 @@ The catalog HTML files contain route-specific static metadata for crawlers; runt
 | `ResumeSettings` or defaults | `types.ts`, `themes.ts`, `storage.ts`, `customThemes.ts`, `ResumePreview.tsx`, `pagination.ts`, `SettingsSidebar.tsx`, export CSS | Storage unit tests plus relevant E2E settings, fit, and export tests |
 | Markdown rendering or safe HTML policy | `MarkdownEditor.tsx`, `ResumePreview.tsx`, `markdownHtml.ts`, shared theme/global CSS, export | Markdown-HTML unit tests, E2E Markdown/GFM/sanitization/alignment coverage, and all export formats |
 | Pagination or paper size | `pagination.ts`, `ResumePreview.tsx`, `export.ts`, preview CSS, settings | E2E pagination, smart-fit, PDF tests |
-| Built-in theme or font | `themes.ts`, `src/themes/`, font assets, custom-theme serialization | Theme selection/reset/download/import and visual/export checks |
+| Built-in theme or font | `themes.ts`, `src/themes/`, storage defaults, font assets/notices, custom-theme serialization | Theme selection/reset/download/import, fresh GitHub system-stack default, user font override preservation, font metadata/build assets, loaded real `700` FontFace, computed-family checks, normal-versus-bold glyph raster comparison, and visual/export checks |
 | Custom themes | `customThemes.ts`, App theme state, `CatalogPages.tsx`, `SettingsSidebar.tsx` | Theme save/reset/import/rename/delete E2E tests |
 | Live theme CSS editing | `cssDraft.ts`, source editors, `App.tsx`, `ResumePreview.tsx`, theme/density/global CSS, HTML export | CSS-draft unit tests plus E2E default source, theme switching, reset, scoping, persistence, preview, save-theme, and export checks |
 | Templates | Both locale data files, quick ids, catalogs, storage default/migration | Template/resource unit tests and locale/catalog E2E tests |
@@ -303,7 +307,7 @@ The catalog HTML files contain route-specific static metadata for crawlers; runt
 | `src/lib/cssDraft.test.ts` | Per-theme CSS map normalization/limits, built-in/custom/runtime/portable selector rewriting, nested-rule and keyframe handling, import removal, malformed-CSS fallback |
 | `src/lib/markdownHtml.test.tsx` | GitHub-style safe raw HTML, allowed alignment values, dangerous tag/attribute removal, and coexistence with GFM output |
 | `src/lib/seo.test.ts` | Route resolution and locale-specific runtime metadata |
-| `e2e/app.spec.ts` | Locale behavior, workspace and header actions, external-repository link placement/security, themes, templates, fonts, Markdown/GFM, sanitized HTML alignment, persistence, preview pagination, smart fitting, three export formats, responsiveness, screenshots |
+| `e2e/app.spec.ts` | Locale behavior, workspace and header actions, external-repository link placement/security, themes, templates, fresh/reset GitHub system font, user font override preservation, loaded real `700` faces and visible Markdown bold glyphs, Markdown/GFM, sanitized HTML alignment, persistence, preview pagination, smart fitting, three export formats, responsiveness, screenshots |
 | `e2e/seo.spec.ts` | Independent crawlable HTML responses and runtime canonical/content for templates and themes |
 | `npm run build` | TypeScript project references and all three Vite entry bundles |
 | `npm run check` | Unit tests, production build, and Chromium E2E suite in sequence |
@@ -323,3 +327,4 @@ Every change must append a row. “Graph update” names the relationships or se
 | 2026-07-12 | [`Add live CSS editor tab`](plan/2026-07-12-live-css-editor.md) | `EditorApp`, source editors, panel chrome, resume rendering, theme CSS drafts, density/application/export CSS, i18n, dependencies, unit/E2E tests | Added per-theme complete CSS ownership and persistence, PostCSS runtime/portable scoping, replacement-theme rendering and export edges, CSS edit/persist/preview flow, isolation/fallback invariants, and matching impact/test coverage. |
 | 2026-07-12 | [`Add Codex resume workflow to READMEs`](plan/2026-07-12-codex-resume-workflow-readme.md) | `README.md`, `README_EN.md` | Added the supplied Chinese Codex-to-Moli workflow with its approved heading emoji and a matching English translation. Reviewed the documentation node, application graph, runtime flows, ownership, invariants, impact map, and test map; no architecture or behavior relationships changed. |
 | 2026-07-12 | [`Add GitHub-style HTML alignment`](plan/2026-07-12-github-style-html-alignment.md) | Resume rendering, Markdown HTML policy, shared resume styles, HTML export, dependencies, unit/E2E tests | Added raw-HTML parsing and GitHub-style sanitization edges, value-restricted alignment ownership, safe edit/preview behavior, shared preview/export styling, the raw-HTML invariant, and matching impact/test coverage. |
+| 2026-07-12 | [`Restore visible bold font weights`](plan/2026-07-12-restore-bold-font-weights.md) | Theme data and storage defaults, shared resume styles, Alibaba/Source Han Bold assets/notices, platform and GitHub system-font contracts, resume rendering, export, unit/E2E tests | Replaced false variable-range and synthetic semantic bold with real `400/700` faces, bundled redistributable Bold assets, retained proprietary platform faces with open fallback, added GitHub's exact system stack as the fresh/reset default while preserving user overrides, and protected loaded Bold faces plus font state behavior in tests. |

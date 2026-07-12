@@ -13,8 +13,10 @@ import warmCss from '../themes/warm.css?raw';
 import type { BuiltInThemeId, Locale, ResumeSettings } from '../types';
 
 export const DEFAULT_FONT_FAMILY = '苹果方正_Medium';
+export const GITHUB_FONT_FAMILY = 'GitHub-System';
 
 export const fontOptions = [
+  { value: GITHUB_FONT_FAMILY, label: GITHUB_FONT_FAMILY, stack: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"' },
   { value: '阿里普惠体2-55-Regular', label: '阿里普惠体2-55-Regular', stack: '"Resume Alibaba PuHuiTi", "Resume Source Han Sans", sans-serif' },
   { value: '苹果方正_Medium', label: '苹果方正_Medium', stack: '"Resume PingFang", "PingFang SC", sans-serif' },
   { value: '思源黑体2.0_Normal', label: '思源黑体2.0_Normal', stack: '"Resume Source Han Sans", "Noto Sans CJK SC", sans-serif' },
@@ -50,7 +52,7 @@ const define = (id: BuiltInThemeId, name: string, tagline: string, css: string, 
 });
 
 export const themes: ThemeDefinition[] = [
-  define('github', 'GitHub', '与 GitHub Markdown 一致的经典排版', githubCss, { fontSize: 16, horizontalPadding: 32, verticalPadding: 24, headingColor: '#1f2328', textColor: '#1f2328', linkColor: '#0969da', accentColor: '#d1d9e0', mutedColor: '#59636e', sectionSpacing: 24 }),
+  define('github', 'GitHub', '与 GitHub Markdown 一致的经典排版', githubCss, { fontFamily: GITHUB_FONT_FAMILY, fontSize: 16, horizontalPadding: 32, verticalPadding: 24, headingColor: '#1f2328', textColor: '#1f2328', linkColor: '#0969da', accentColor: '#d1d9e0', mutedColor: '#59636e', sectionSpacing: 24 }),
   define('crisp', '简约', '清晰克制的现代排版', crispCss, {}),
   define('vivid', '鲜明', '醒目的蓝色标题层级', vividCss, { headingColor: '#016ef1', textColor: '#222222' }),
   define('airy', '轻盈', '双字体与虚线标题', airyCss, {}),

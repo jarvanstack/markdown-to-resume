@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { getTemplates, templates } from '../data/templates';
-import { themes } from '../data/themes';
+import { fontOptions, themes } from '../data/themes';
 import { detectLocale } from '../i18n';
 import { createCustomTheme, CUSTOM_THEME_LIMIT, CUSTOM_THEMES_KEY, deleteCustomTheme, loadCustomThemes, persistCustomThemes } from './customThemes';
 import { defaultSettings, defaultState, loadState, saveState, STORAGE_KEY } from './storage';
@@ -22,7 +22,7 @@ describe('中文简历数据', () => {
     expect(state.settings.theme).toBe('github');
     expect(state.settings).toMatchObject({
       theme: 'github',
-      fontFamily: '苹果方正_Medium',
+      fontFamily: 'GitHub-System',
       fontSize: 16,
       lineHeight: 1.5,
       headingColor: '#1f2328',
@@ -37,6 +37,13 @@ describe('中文简历数据', () => {
 
   it('GitHub 主题包含固定版本的完整 Markdown 样式并保持可移植作用域', () => {
     const github = themes.find((theme) => theme.id === 'github')!;
+    expect(github.defaults.fontFamily).toBe('GitHub-System');
+    expect(fontOptions[0]).toEqual({
+      value: 'GitHub-System',
+      label: 'GitHub-System',
+      stack: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+    });
+    expect(themes.filter((theme) => theme.id !== 'github').every((theme) => theme.defaults.fontFamily === '苹果方正_Medium')).toBe(true);
     expect(github.css).toContain('.theme.github .task-list-item');
     expect(github.css).toContain('white-space: break-spaces');
     expect(github.css).toContain('.theme.github .markdown-alert');
@@ -45,7 +52,8 @@ describe('中文简历数据', () => {
   });
 
   it('合并已保存设置并补齐新增字段', () => {
-    const state = loadState({ getItem: () => JSON.stringify({ settings: { fontSize: 12, horizontalPadding: 36 }, markdown: '# 我的简历' }) });
+    const state = loadState({ getItem: () => JSON.stringify({ settings: { fontFamily: '苹果方正_Medium', fontSize: 12, horizontalPadding: 36 }, markdown: '# 我的简历' }) });
+    expect(state.settings.fontFamily).toBe('苹果方正_Medium');
     expect(state.settings.fontSize).toBe(12);
     expect(state.settings.horizontalPadding).toBe(36);
     expect(state.settings.sectionSpacing).toBe(defaultSettings.sectionSpacing);

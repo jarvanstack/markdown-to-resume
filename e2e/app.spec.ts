@@ -156,6 +156,8 @@ test('中文界面复刻三栏编辑器结构', async ({ page }) => {
   await expect(page.getByText(/广告|subscribe|AD$/i)).toHaveCount(0);
   await expect(page.getByTestId('resume-page')).toHaveClass(/css-editor-theme/);
   await expect(page.getByTestId('resume-page')).toHaveAttribute('data-theme-id', 'github');
+  await expect(page.getByTestId('font-family')).toHaveValue('GitHub-System');
+  await expect(page.getByTestId('resume-page')).toHaveCSS('font-family', /-apple-system/);
   await expect(page.getByTestId('font-size')).toHaveValue('16');
   await expect(page.getByTestId('line-height')).toHaveAttribute('min', '0.5');
   await expect(page.getByTestId('export-format')).toHaveValue('pdf');
@@ -374,7 +376,22 @@ test('切换主题不重置设置且刷新后保持', async ({ page }) => {
   await expect(page.getByTestId('resume-page')).toHaveAttribute('data-theme-id', 'vivid');
 });
 
-test('五套新字体会真实改变所有主题的正文和标题字形', async ({ page }) => {
+test('GitHub 系统字体默认启用且保留用户覆盖', async ({ page }) => {
+  const fontSelect = page.getByTestId('font-family');
+  await expect(fontSelect).toHaveValue('GitHub-System');
+  await expect(page.getByTestId('resume-page')).toHaveCSS('font-family', /-apple-system/);
+
+  await fontSelect.selectOption('苹果方正_Medium');
+  await page.getByTestId('theme-vivid').click();
+  await page.getByTestId('theme-github').click();
+  await expect(fontSelect).toHaveValue('苹果方正_Medium');
+
+  await page.getByTestId('reset-theme-settings').click();
+  await expect(fontSelect).toHaveValue('GitHub-System');
+  await expect(page.getByTestId('resume-page')).toHaveCSS('font-family', /-apple-system/);
+});
+
+test('五套新字体会真实改变所有主题的正文和标题字形并显示 Markdown 粗体', async ({ page }) => {
   test.setTimeout(60_000);
   const fontSelect = page.getByTestId('font-family');
   const expectedFonts = [
@@ -384,29 +401,65 @@ test('五套新字体会真实改变所有主题的正文和标题字形', async
     ['思源宋体', 'Resume Source Han Serif'],
     ['Times-New-Roman', 'Resume Times New Roman'],
   ] as const;
-  await expect(fontSelect.locator('option')).toHaveCount(expectedFonts.length);
-  expect(await fontSelect.locator('option').allTextContents()).toEqual(expectedFonts.map(([label]) => label));
-  await page.getByTestId('theme-crisp').click();
+  await expect(fontSelect.locator('option')).toHaveCount(expectedFonts.length + 1);
+  expect(await fontSelect.locator('option').allTextContents()).toEqual(['GitHub-System', ...expectedFonts.map(([label]) => label)]);
+  await replaceMarkdown(page, '# 字体字重测试\n\n普通文本 **加粗文本**');
 
   const renderedWidths: number[] = [];
   for (const [value, internalFamily] of expectedFonts) {
     await fontSelect.selectOption(value);
     await page.evaluate(async (family) => {
       await document.fonts.load(`16px "${family}"`, '中文简历排版 Resume 2026');
+      await document.fonts.load(`700 32px "${family}"`, '中文简历排版 Resume 2026');
     }, internalFamily);
-    const metrics = await page.getByTestId('resume-page').evaluate((sheet) => {
+    const metrics = await page.getByTestId('resume-page').evaluate((sheet, family) => {
       const rootStyle = getComputedStyle(sheet);
       const headingStyle = getComputedStyle(sheet.querySelector('h1')!);
+      const paragraphStyle = getComputedStyle(sheet.querySelector('p')!);
+      const strongStyle = getComputedStyle(sheet.querySelector('strong')!);
       const sample = document.createElement('span');
       sample.textContent = '中文简历排版 Resume 2026 WMWM';
       sample.style.cssText = `position:fixed;visibility:hidden;white-space:nowrap;font:400 32px ${rootStyle.fontFamily}`;
       document.body.appendChild(sample);
       const width = sample.getBoundingClientRect().width;
       sample.remove();
-      return { rootFamily: rootStyle.fontFamily, headingFamily: headingStyle.fontFamily, width };
-    });
+
+      const canvas = document.createElement('canvas');
+      canvas.width = 720;
+      canvas.height = 80;
+      const context = canvas.getContext('2d', { willReadFrequently: true })!;
+      const renderPixels = (weight: string) => {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = '#000';
+        context.font = `${weight} 32px ${rootStyle.fontFamily}`;
+        context.textBaseline = 'top';
+        context.fillText('中文简历排版 Resume 2026 WMWM', 4, 4);
+        return context.getImageData(0, 0, canvas.width, canvas.height).data;
+      };
+      const normalPixels = renderPixels(paragraphStyle.fontWeight);
+      const boldPixels = renderPixels(strongStyle.fontWeight);
+      let boldPixelDifference = 0;
+      for (let index = 0; index < normalPixels.length; index += 1) {
+        boldPixelDifference += Math.abs(normalPixels[index] - boldPixels[index]);
+      }
+
+      return {
+        rootFamily: rootStyle.fontFamily,
+        headingFamily: headingStyle.fontFamily,
+        loadedBoldFaceCount: Array.from(document.fonts).filter((face) => face.family.includes(family) && face.weight === '700' && face.status === 'loaded').length,
+        fontSynthesis: rootStyle.fontSynthesis,
+        normalWeight: Number(paragraphStyle.fontWeight),
+        boldWeight: Number(strongStyle.fontWeight),
+        boldPixelDifference,
+        width,
+      };
+    }, internalFamily);
     expect(metrics.rootFamily).toContain(internalFamily);
     expect(metrics.headingFamily).toContain(internalFamily);
+    expect(metrics.loadedBoldFaceCount, internalFamily).toBeGreaterThan(0);
+    expect(metrics.fontSynthesis, internalFamily).toBe('weight');
+    expect(metrics.boldWeight, internalFamily).toBe(700);
+    expect(metrics.boldPixelDifference, internalFamily).toBeGreaterThan(0);
     renderedWidths.push(Math.round(metrics.width * 10) / 10);
   }
 
