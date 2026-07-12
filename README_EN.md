@@ -16,6 +16,14 @@
 
 ---
 
+## 🚀 An Ultimate Codex Workflow for Writing Resumes: Markdown to PDF
+
+1. Write a resume outline in Markdown
+2. Codex prompt: Develop the resume based on the outline
+3. Codex prompt: Find problems in the resume and areas for improvement, then output the suggestions and reasons in a table
+4. Continue improving the Markdown based on the results until you are satisfied
+5. Use the markdown-to-resume tool to generate a PDF with **Smart One-Page** and **perfect GitHub styling**
+
 ## ✨ Why Moli
 
 Moli is a browser-based Markdown resume editor. There is no account to create and no document formatting to wrestle with: write your content, choose a template and theme, and see a professional resume take shape in real time.
