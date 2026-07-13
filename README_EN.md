@@ -43,7 +43,7 @@ Moli is a browser-based Markdown resume editor. There is no account to create an
 
 ## 🖼️ Preview
 
-![Moli Markdown resume editor with live preview and smart one-page layout](https://cdn.jarvans.com/blog/202320260711212609578.png)
+![Moli Markdown resume editor with live preview and smart one-page layout](https://cdn.jarvans.com/blog/202320260713114726218.png)
 
 ## 🪄 Smart One-Page
 

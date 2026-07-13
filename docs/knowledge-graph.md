@@ -3,7 +3,7 @@
 ## Graph Metadata
 
 - Canonical file: `docs/knowledge-graph.md`
-- Last verified: 2026-07-12
+- Last verified: 2026-07-13
 - Architecture: client-only React single-page application with three HTML entry points
 - Runtime boundary: browser; no application backend or remote resume-content service
 - Persistence boundary: browser `localStorage`
@@ -345,3 +345,4 @@ Every change must append a row. “Graph update” names the relationships or se
 | 2026-07-12 | [`Create Xiaohongshu Codex resume workflow covers`](plan/2026-07-12-xiaohongshu-promo-covers.md) | `marketing/xiaohongshu/*.png`, marketing assets | Added an isolated non-runtime flow from the README workflow and information-complete art direction through the OpenAI Image API and `gpt-image-2` to three 1024 x 1536 PNG covers. Recorded generation verification for the headline, five steps, benefit line, and per-cover link policy; cover one points to `github.com/jarvanstack/markdown-to-resume`, while covers two and three retain the deployed project URL. Confirmed that the covers contain no product screenshots or interfaces and do not affect the Vite application, deployment graph, or runtime invariants. |
 | 2026-07-12 | [`Restore visible bold font weights`](plan/2026-07-12-restore-bold-font-weights.md) | Theme data and storage defaults, shared resume styles, Alibaba/Source Han Bold assets/notices, platform and GitHub system-font contracts, resume rendering, export, unit/E2E tests | Replaced false variable-range and synthetic semantic bold with real `400/700` faces, bundled redistributable Bold assets, retained proprietary platform faces with open fallback, added GitHub's exact system stack as the fresh/reset default while preserving user overrides, and protected loaded Bold faces plus font state behavior in tests. |
 | 2026-07-12 | [`Preserve font colors in exported theme CSS`](plan/2026-07-12-export-theme-font-colors.md) | Custom themes, resume/theme color-variable contract, unit/E2E tests | Connected serialized theme settings to the effective runtime color variables already consumed by theme CSS, strengthened the standalone theme-file color invariant, and added download, independent CSS rendering, re-import, and computed-color protection. |
+| 2026-07-13 | [`Update README preview image`](plan/2026-07-13-update-readme-preview-image.md) | `README.md`, `README_EN.md` | Replaced the shared localized README preview image reference with the supplied reachable PNG. Reviewed the documentation nodes, module graph, data ownership, runtime flows, invariants, impact map, and test map; no architecture or application behavior relationships changed. |

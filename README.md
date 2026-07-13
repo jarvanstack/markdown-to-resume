@@ -43,7 +43,7 @@
 
 ## 🖼️ 界面预览
 
-![墨历 Markdown 简历编辑器、实时预览与智能一页排版界面](https://cdn.jarvans.com/blog/202320260711212609578.png)
+![墨历 Markdown 简历编辑器、实时预览与智能一页排版界面](https://cdn.jarvans.com/blog/202320260713114726218.png)
 
 ## 🪄 智能一页
 
